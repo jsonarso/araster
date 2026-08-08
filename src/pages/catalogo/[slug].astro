@@ -1,0 +1,91 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import WhatsAppButton from "@/components/WhatsAppButton.astro";
+import Gallery from "@/components/Gallery.tsx";
+import ProductCard from "@/components/ProductCard.astro";
+import { getCollection, render } from "astro:content";
+import { getImage } from "astro:assets";
+import { CATEGORIES, WHATSAPP_MESSAGES } from "@/config/site";
+
+export async function getStaticPaths() {
+  const products = await getCollection("products");
+  return products.map((product) => ({
+    params: { slug: product.id },
+    props: { product },
+  }));
+}
+
+const { product } = Astro.props;
+const { name, category, shortDescription, photos, material, size, printTime } = product.data;
+const { Content } = await render(product);
+
+const categoryInfo = CATEGORIES.find((c) => c.slug === category);
+
+const optimizedPhotos = await Promise.all(
+  photos.map(async (photo) => {
+    const img = await getImage({ src: photo.src, width: 900, height: 700 });
+    return { src: img.src, alt: photo.alt };
+  })
+);
+
+const specs = [
+  { label: "Material", value: material },
+  { label: "Tamaño", value: size },
+  { label: "Tiempo estimado", value: printTime },
+].filter((s) => s.value);
+
+const allProducts = await getCollection("products");
+const related = allProducts
+  .filter((p) => p.data.category === category && p.id !== product.id)
+  .slice(0, 3);
+---
+
+<Layout title={name} description={shortDescription} image={optimizedPhotos[0].src}>
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <nav class="mb-6 font-mono text-xs text-(--color-muted)" aria-label="Ruta de navegación">
+      <a href="/" class="hover:text-(--color-accent)">Inicio</a>
+      <span class="mx-2">/</span>
+      <a href="/catalogo" class="hover:text-(--color-accent)">Catálogo</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-fg)">{name}</span>
+    </nav>
+
+    <div class="grid gap-10 md:grid-cols-2">
+      <Gallery photos={optimizedPhotos} client:load />
+
+      <div class="flex flex-col gap-4">
+        <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+          {categoryInfo?.label ?? category}
+        </span>
+        <h1 class="font-mono text-3xl font-bold text-(--color-fg)">{name}</h1>
+        <p class="text-(--color-muted)">{shortDescription}</p>
+
+        {specs.length > 0 && (
+          <dl class="grid grid-cols-1 gap-3 border-y border-(--color-border) py-4 sm:grid-cols-3">
+            {specs.map((spec) => (
+              <div>
+                <dt class="font-mono text-[11px] uppercase tracking-wider text-(--color-muted)">{spec.label}</dt>
+                <dd class="mt-1 text-sm text-(--color-fg)">{spec.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <div class="text-sm leading-relaxed text-(--color-muted) [&_p]:mb-3">
+          <Content />
+        </div>
+
+        <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />
+      </div>
+    </div>
+
+    {related.length > 0 && (
+      <div class="mt-20">
+        <h2 class="font-mono text-2xl font-bold text-(--color-fg)">Piezas relacionadas</h2>
+        <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {related.map((p) => <ProductCard product={p} />)}
+        </div>
+      </div>
+    )}
+  </section>
+</Layout>

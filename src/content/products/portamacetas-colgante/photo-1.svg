@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#34d399" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="386.1637181863951" y="364.08473681383055" width="77.70259254505046" height="77.70259254505046" rx="10" transform="rotate(8.96401405751892 425.01501445892035 402.9360330863558)" fill="none" stroke="#34d399" stroke-width="2.5" opacity="0.9"/>
+  <rect x="307.6559516869746" y="321.764872424195" width="67.10082352492066" height="67.10082352492066" rx="10" transform="rotate(20.742065916183435 341.20636344943495 355.31528418665533)" fill="none" stroke="#34d399" stroke-width="2.5" opacity="0.9"/>
+  <rect x="290.4712569715787" y="231.29350126781196" width="94.40841437988375" height="94.40841437988375" rx="10" transform="rotate(53.638418937864905 337.6754641615206 278.49770845775384)" fill="none" stroke="#34d399" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="454.10070426487397" cy="391.55986793411887" r="96.07945444811111" fill="none" stroke="#34d399" stroke-width="2" opacity="0.5"/>
+  <circle cx="521.9910622676792" cy="331.37119297933356" r="96.8638515737205" fill="none" stroke="#34d399" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#34d399">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Portamacetas colgante</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#34d399" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

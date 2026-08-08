@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#fb923c" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="313.8625501160801" y="237.74701402417708" width="107.79023441848821" height="107.79023441848821" rx="10" transform="rotate(11.278316979891768 367.75766732532423 291.6421312334212)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
+  <rect x="293.6931559460671" y="289.9062350764434" width="159.0962416395062" height="159.0962416395062" rx="10" transform="rotate(25.529172432389657 373.2412767658202 369.4543558961965)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
+  <rect x="498.14721713221974" y="190.62299131444792" width="157.09588293782244" height="157.09588293782244" rx="10" transform="rotate(34.10608472028099 576.695158601131 269.17093278335915)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="397.8043556668816" cy="333.69968419135535" r="108.32708957992824" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
+  <circle cx="514.1879082723465" cy="338.75606541929585" r="93.74588968872368" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#fb923c">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Pulpo articulado</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#fb923c" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

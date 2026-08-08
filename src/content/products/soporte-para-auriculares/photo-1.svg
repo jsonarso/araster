@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="366.47802543662397" y="332.26467325457594" width="132.86262618045444" height="132.86262618045444" rx="10" transform="rotate(56.751630332670935 432.9093385268512 398.69598634480315)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="383.07173099977507" y="379.790321667581" width="62.5741696369714" height="62.5741696369714" rx="10" transform="rotate(34.842317120564324 414.3588158182608 411.0774064860667)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="378.00926808640793" y="222.57109284986325" width="152.93891195810352" height="152.93891195810352" rx="10" transform="rotate(51.84560539752506 454.4787240654597 299.040548828915)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="545.077693576495" cy="260.11057378263706" r="58.41224552058254" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <circle cx="591.6545392440886" cy="416.28892907234325" r="106.27799603449088" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#3b82f6">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Soporte para auriculares</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#3b82f6" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

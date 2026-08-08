@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#c084fc" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="459.0197115619759" y="316.5540426161857" width="85.37025121290714" height="85.37025121290714" rx="10" transform="rotate(44.510107061131905 501.70483716842944 359.2391682226393)" fill="none" stroke="#c084fc" stroke-width="2.5" opacity="0.9"/>
+  <rect x="323.15472127550964" y="365.243540478518" width="86.1156559112089" height="86.1156559112089" rx="10" transform="rotate(58.31095936629501 366.2125492311141 408.3013684341225)" fill="none" stroke="#c084fc" stroke-width="2.5" opacity="0.9"/>
+  <rect x="439.99354928265956" y="359.1699112156266" width="62.197492123673435" height="62.197492123673435" rx="10" transform="rotate(11.381428247029627 471.0922953444963 390.2686572774633)" fill="none" stroke="#c084fc" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="415.8586264196125" cy="402.84550674857826" r="57.0597633798885" fill="none" stroke="#c084fc" stroke-width="2" opacity="0.5"/>
+  <circle cx="583.8908047805963" cy="259.88483907183854" r="53.29598189019411" fill="none" stroke="#c084fc" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#c084fc">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Maceta geométrica</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#c084fc" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

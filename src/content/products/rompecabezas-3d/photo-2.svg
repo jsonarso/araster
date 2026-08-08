@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#fb923c" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="327.7996902204117" y="322.05444205648007" width="76.7582276820942" height="76.7582276820942" rx="10" transform="rotate(53.53179934133394 366.17880406145883 360.4335558975272)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
+  <rect x="260.0704383710727" y="262.8601693608147" width="123.2253647145002" height="123.2253647145002" rx="10" transform="rotate(32.0341301113526 321.6831207283228 324.4728517180648)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
+  <rect x="446.81930273623175" y="381.3263417088084" width="62.88381576672374" height="62.88381576672374" rx="10" transform="rotate(22.71549225911288 478.2612106195936 412.76824959217026)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="437.9316420005316" cy="326.39499191958225" r="56.26125336450583" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
+  <circle cx="457.4793935555403" cy="417.31477269312126" r="66.38230444229315" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#fb923c">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Rompecabezas 3D geométrico</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#fb923c" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

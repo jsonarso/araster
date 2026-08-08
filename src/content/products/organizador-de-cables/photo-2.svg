@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="431.14543135331263" y="327.93919736423493" width="147.43426468569518" height="147.43426468569518" rx="10" transform="rotate(6.481182578243866 504.86256369616024 401.65632970708253)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="346.4046809339918" y="295.66524002964854" width="88.98401321330294" height="88.98401321330294" rx="10" transform="rotate(16.305270202600056 390.89668754064326 340.1572466363)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="396.5771490831753" y="253.62056734208974" width="83.39174748556304" height="83.39174748556304" rx="10" transform="rotate(2.6252245915239794 438.27302282595684 295.31644108487126)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="580.3629399651488" cy="256.99651719396775" r="83.10476871351935" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <circle cx="424.90278488253375" cy="427.76675710350594" r="65.051810455067" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#3b82f6">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Organizador de cables</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#3b82f6" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

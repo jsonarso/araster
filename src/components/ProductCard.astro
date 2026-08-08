@@ -1,0 +1,42 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { CATEGORIES, WHATSAPP_MESSAGES } from "@/config/site";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  product: CollectionEntry<"products">;
+}
+
+const { product } = Astro.props;
+const { name, category, shortDescription, photos } = product.data;
+const categoryInfo = CATEGORIES.find((c) => c.slug === category);
+---
+
+<article class="group corner-brackets flex flex-col overflow-hidden border border-(--color-border) bg-(--color-surface) transition-colors hover:border-(--color-accent)">
+  <a href={`/catalogo/${product.id}`} class="block overflow-hidden">
+    <Image
+      src={photos[0].src}
+      alt={photos[0].alt}
+      width={600}
+      height={467}
+      class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+    />
+  </a>
+  <div class="flex flex-1 flex-col gap-2 p-4">
+    <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+      {categoryInfo?.label ?? category}
+    </span>
+    <h3 class="font-mono text-base font-semibold text-(--color-fg)">
+      <a href={`/catalogo/${product.id}`} class="hover:text-(--color-accent)">
+        {name}
+      </a>
+    </h3>
+    <p class="flex-1 text-sm text-(--color-muted)">{shortDescription}</p>
+    <WhatsAppButton
+      message={WHATSAPP_MESSAGES.product(name)}
+      size="md"
+      class="mt-2 w-full justify-center"
+    />
+  </div>
+</article>

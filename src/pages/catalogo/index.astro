@@ -1,0 +1,82 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ProductCard from "@/components/ProductCard.astro";
+import { getCollection } from "astro:content";
+import { CATEGORIES } from "@/config/site";
+
+const allProducts = await getCollection("products");
+const sorted = [...allProducts].sort((a, b) => a.data.name.localeCompare(b.data.name, "es"));
+---
+
+<Layout
+  title="Catálogo"
+  description="Explorá el catálogo de piezas impresas en 3D de Araster: funcionales, decorativas, juguetes y organización."
+>
+  <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <h1 class="font-mono text-3xl font-bold text-(--color-fg) sm:text-4xl">Catálogo</h1>
+    <p class="mt-3 max-w-2xl text-(--color-muted)">
+      Explorá nuestras piezas por categoría. Si algo te gusta, consultanos por WhatsApp con un click.
+    </p>
+
+    <div class="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoría">
+      <button
+        type="button"
+        data-filter="todas"
+        class="filter-btn is-active rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
+      >
+        Todas
+      </button>
+      {CATEGORIES.map((cat) => (
+        <button
+          type="button"
+          data-filter={cat.slug}
+          class="filter-btn rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+
+    <div id="product-grid" class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {sorted.map((product) => (
+        <div data-category={product.data.category}>
+          <ProductCard product={product} />
+        </div>
+      ))}
+    </div>
+
+    <p id="empty-state" class="mt-12 hidden text-center text-(--color-muted)">
+      No hay piezas en esta categoría todavía.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .filter-btn.is-active {
+    background-color: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-btn");
+  const items = document.querySelectorAll<HTMLElement>("#product-grid > [data-category]");
+  const emptyState = document.getElementById("empty-state");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      buttons.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      const filter = btn.dataset.filter;
+      let visibleCount = 0;
+      items.forEach((item) => {
+        const match = filter === "todas" || item.dataset.category === filter;
+        item.style.display = match ? "" : "none";
+        if (match) visibleCount++;
+      });
+      emptyState?.classList.toggle("hidden", visibleCount > 0);
+    });
+  });
+</script>

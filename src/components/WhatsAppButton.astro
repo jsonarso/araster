@@ -1,0 +1,52 @@
+---
+import { whatsappLink } from "@/config/site";
+
+interface Props {
+  message?: string;
+  variant?: "primary" | "outline";
+  size?: "md" | "lg";
+  class?: string;
+  label?: string;
+}
+
+const {
+  message,
+  variant = "primary",
+  size = "md",
+  class: className,
+  label = "Consultar por WhatsApp",
+} = Astro.props;
+
+const base =
+  "inline-flex items-center gap-2 rounded-md font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2";
+const sizes = {
+  md: "px-4 py-2 text-sm",
+  lg: "px-6 py-3.5 text-base",
+};
+const variants = {
+  primary:
+    "bg-(--color-whatsapp) text-[#052014] hover:bg-(--color-whatsapp-strong)",
+  outline:
+    "border border-(--color-whatsapp) text-(--color-whatsapp) hover:bg-(--color-whatsapp)/10",
+};
+---
+
+<a
+  href={whatsappLink(message)}
+  target="_blank"
+  rel="noopener noreferrer"
+  class:list={[base, sizes[size], variants[variant], className]}
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    class="h-[1.1em] w-[1.1em] shrink-0"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path
+      d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.14h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.37c0-4.55 3.7-8.25 8.26-8.25a8.2 8.2 0 0 1 5.84 2.42 8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.71 8.23-8.26 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.78.97-.14.17-.29.19-.53.06-.25-.12-1.05-.39-2-1.23a7.5 7.5 0 0 1-1.38-1.72c-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.16.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.43h-.48c-.16 0-.43.06-.66.31-.22.25-.86.85-.86 2.06s.89 2.39 1.01 2.56c.13.16 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.2-.58.2-1.08.14-1.18-.06-.1-.22-.16-.47-.28Z"
+    ></path>
+  </svg>
+  <span>{label}</span>
+</a>

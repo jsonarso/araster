@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="30%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#3ea6ff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#3ea6ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0a0e14"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="40" y="40" width="1120" height="550" fill="none" stroke="#3ea6ff" stroke-width="1" opacity="0.4" stroke-dasharray="8 8"/>
+  <path d="M170 400 L280 160 L390 400 Z" fill="none" stroke="#3ea6ff" stroke-width="4"/>
+  <line x1="170" y1="400" x2="390" y2="400" stroke="#3ea6ff" stroke-width="4"/>
+  <circle cx="280" cy="280" r="6" fill="#3ea6ff"/>
+  <g font-family="'JetBrains Mono', monospace">
+    <text x="470" y="290" font-size="72" font-weight="700" fill="#e7edf5">Araster</text>
+    <text x="470" y="340" font-size="26" fill="#8b97a8" letter-spacing="1">Impresión 3D · Piezas funcionales y decorativas</text>
+    <text x="470" y="390" font-size="18" fill="#3ea6ff" letter-spacing="3">ARASTER.PAGES.DEV</text>
+  </g>
+</svg>

@@ -1,54 +1,57 @@
 # Araster
 
-Sitio informativo para Araster, un taller de impresión 3D. Muestra un catálogo de piezas
-impresas (funcionales, decorativas, juguetes y organización) con contacto directo por
-WhatsApp. Sin carrito, sin pagos — solo mostrar el trabajo y facilitar la consulta.
+Informational website for Araster, a 3D printing workshop. Showcases a catalog of
+printed pieces (functional, decorative, toys, and organization) with direct WhatsApp
+contact. No cart, no payments — just showcase the work and make it easy to reach out.
+
+The page content itself (products, copy, nav labels, etc.) is in Spanish, since that's
+the site's audience. Everything else — code, comments, and this README — is in English.
 
 ## Stack
 
-- [Astro](https://astro.build) (salida estática) + TypeScript
-- Tailwind CSS v4 (config CSS-first en `src/styles/global.css`)
-- React solo para las dos piezas interactivas (menú mobile y galería de fotos), como islas de Astro
-- Content Collections de Astro para el catálogo de productos
-- Pensado para desplegar en Cloudflare Pages
+- [Astro](https://astro.build) (static output) + TypeScript
+- Tailwind CSS v4 (CSS-first config in `src/styles/global.css`)
+- React only for the two interactive pieces (mobile menu and photo gallery), as Astro islands
+- Astro Content Collections for the product catalog
+- Built for deployment on Cloudflare Pages
 
-## Estructura del proyecto
+## Project structure
 
 ```
 src/
-  config/site.ts        # Número de WhatsApp, mensajes prellenados, categorías, redes
-  content/products/      # Un directorio por producto (markdown + fotos)
-  content.config.ts       # Schema de la colección "products"
-  components/              # Header, Footer, ProductCard, WhatsAppButton, Gallery, MobileNav...
-  layouts/Layout.astro     # Layout base con meta tags SEO/Open Graph
+  config/site.ts           # WhatsApp number, prefilled messages, categories, socials
+  content/products/        # One directory per product (markdown + photos)
+  content.config.ts        # Schema for the "products" collection
+  components/               # Header, Footer, ProductCard, WhatsAppButton, Gallery, MobileNav...
+  layouts/Layout.astro      # Base layout with SEO/Open Graph meta tags
   pages/
-    index.astro            # Home
-    catalogo/index.astro   # Catálogo con filtro por categoría
-    catalogo/[slug].astro  # Detalle de producto
-    sobre-nosotros.astro   # About / Contacto
-public/                    # favicon, og-image, robots.txt
+    index.astro             # Home
+    catalogo/index.astro    # Catalog with category filter
+    catalogo/[slug].astro   # Product detail
+    sobre-nosotros.astro    # About / Contact
+public/                     # favicon, og-image, robots.txt
 ```
 
-## Editar el número de WhatsApp y mensajes
+## Editing the WhatsApp number and messages
 
-Todo vive en un solo archivo: **`src/config/site.ts`**.
+Everything lives in one file: **`src/config/site.ts`**.
 
 ```ts
-export const WHATSAPP_NUMBER = "000000000"; // <- reemplazar por el número real
+export const WHATSAPP_NUMBER = "000000000"; // <- replace with the real number
 ```
 
-Formato: código de país + número, sin `+`, sin espacios ni guiones (ej. `5491122334455`
-para Argentina). Ahí mismo se editan los textos prellenados de los botones y el link de
-Instagram / email de contacto.
+Format: country code + number, no `+`, no spaces or dashes (e.g. `5491122334455` for
+Argentina). The prefilled button text and the Instagram link / contact email are edited
+in that same file.
 
-## Agregar, editar o quitar productos
+## Adding, editing, or removing products
 
-Cada producto es una carpeta en `src/content/products/<slug>/` con un `index.md` y sus
-fotos al lado. No hace falta tocar código.
+Each product is a folder at `src/content/products/<slug>/` with an `index.md` and its
+photos alongside it. No code changes needed.
 
-1. Creá una carpeta nueva, ej. `src/content/products/mi-pieza-nueva/`.
-2. Agregá las fotos ahí adentro (jpg, png, webp o svg).
-3. Creá `index.md` con este formato:
+1. Create a new folder, e.g. `src/content/products/my-new-piece/`.
+2. Add the photos inside it (jpg, png, webp, or svg).
+3. Create `index.md` with this format:
 
 ```md
 ---
@@ -60,64 +63,67 @@ photos:
     alt: "Texto alternativo de la foto"
   - src: "./foto-2.jpg"
     alt: "Otra foto del producto"
-material: "PLA" # opcional
-size: "10 x 10 x 5 cm" # opcional
-printTime: "3 h" # opcional
-featured: false # true para mostrarla en el home
+material: "PLA" # optional
+size: "10 x 10 x 5 cm" # optional
+printTime: "3 h" # optional
+featured: false # true to show it on the home page
 ---
 
-Descripción larga del producto (soporta markdown).
+Long product description (supports markdown).
 ```
 
-Para agregar una categoría nueva, sumala al array `CATEGORIES` en `src/config/site.ts` y
-usá el mismo `slug` en el `category` de tus productos.
+Note: `name`, `shortDescription`, `alt`, and the body are page content, so keep them in
+Spanish to match the rest of the site.
 
-Las fotos placeholder actuales son SVGs generados (estilo "blueprint") para no depender de
-imágenes reales todavía — reemplazalas por fotos reales cuando las tengas, el sitio las va
-a optimizar automáticamente gracias a `astro:assets`.
+To add a new category, add it to the `CATEGORIES` array in `src/config/site.ts` and use
+the same `slug` in the `category` field of your products.
 
-## Desarrollo local
+The current placeholder photos are generated SVGs (blueprint-style) so the site doesn't
+depend on real photos yet — swap them for real photos whenever you have them; the site
+will optimize them automatically via `astro:assets`.
 
-Requiere Node 18.20.8+, 20.3.0+ o 22.0.0+.
+## Local development
+
+Requires Node 18.20.8+, 20.3.0+, or 22.0.0+.
 
 ```bash
 npm install
 npm run dev       # http://localhost:4321
-npm run build     # build de producción en dist/
-npm run preview   # sirve el build de producción localmente
+npm run build     # production build into dist/
+npm run preview   # serve the production build locally
 ```
 
-`npm run build` corre `astro check` antes de compilar, así se detectan errores de tipos.
+`npm run build` runs `astro check` before compiling, so type errors are caught early.
 
-## Deploy en Cloudflare Pages
+## Deploying to Cloudflare Pages
 
-1. Subí el repo a GitHub/GitLab (o usá Wrangler para deploy directo).
-2. En el dashboard de Cloudflare Pages, creá un proyecto nuevo conectado al repo.
-3. Configuración de build:
+1. Push the repo to GitHub/GitLab (or use Wrangler for a direct deploy).
+2. In the Cloudflare Pages dashboard, create a new project connected to the repo.
+3. Build configuration:
    - **Framework preset:** Astro
    - **Build command:** `npm run build`
    - **Build output directory:** `dist`
-   - **Node version:** 20 (o superior) — configurable con la variable de entorno
-     `NODE_VERSION` en Cloudflare Pages si hace falta.
-4. Deploy. Cloudflare va a reconstruir el sitio en cada push a la rama configurada.
+   - **Node version:** 20 or newer — configurable via the `NODE_VERSION` environment
+     variable in Cloudflare Pages if needed.
+4. Deploy. Cloudflare will rebuild the site on every push to the configured branch.
 
-También se puede desplegar con Wrangler:
+You can also deploy with Wrangler:
 
 ```bash
 npm run build
 npx wrangler pages deploy dist
 ```
 
-No hay funciones server-side ni SSR — el sitio es 100% estático, así que no necesita
-configuración adicional de Cloudflare Pages Functions.
+There are no server-side functions or SSR — the site is 100% static, so no additional
+Cloudflare Pages Functions configuration is needed.
 
 ## SEO
 
-- Meta tags y Open Graph en español en `src/layouts/Layout.astro` (título, descripción,
-  imagen, canonical).
-- Sitemap generado automáticamente en el build (`@astrojs/sitemap`) — actualizá la URL
-  `site` en `astro.config.mjs` cuando tengas el dominio final.
-- `public/robots.txt` con referencia al sitemap.
-- `public/og-image.svg` es un placeholder — para mejor compatibilidad con redes sociales
-  (algunas no soportan SVG en Open Graph), reemplazalo por un `.png` o `.jpg` de 1200x630
-  y actualizá `SITE.ogImage` en `src/config/site.ts`.
+- Meta tags and Open Graph tags (in Spanish, matching the page content) in
+  `src/layouts/Layout.astro` (title, description, image, canonical).
+- Sitemap generated automatically at build time (`@astrojs/sitemap`) — update the `site`
+  URL in `astro.config.mjs` once you have the final domain.
+- `public/robots.txt` references the sitemap.
+- `public/og-image.svg` is a placeholder — for better social-platform compatibility (some
+  don't support SVG in Open Graph), replace it with a 1200x630 `.png` or `.jpg` and update
+  `SITE.ogImage` in `src/config/site.ts`.

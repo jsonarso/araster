@@ -31,7 +31,7 @@ export default function MobileNav({ links }: { links: NavLink[] }) {
 
       <div
         className={cn(
-          "fixed inset-x-0 top-16 bottom-0 z-40 bg-(--color-bg)/98 backdrop-blur-sm transition-opacity duration-150",
+          "fixed inset-x-0 top-16 bottom-0 z-40 bg-[rgba(10,14,20,0.98)] backdrop-blur-sm transition-opacity duration-150",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
       >

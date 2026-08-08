@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@source "../components/**/*.{astro,tsx,ts}";
+@source "../layouts/**/*.astro";
+@source "../pages/**/*.astro";
+
 @import "@fontsource-variable/inter";
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";

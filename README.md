@@ -58,6 +58,7 @@ photos alongside it. No code changes needed.
 name: "Nombre de la pieza"
 category: "funcional" # funcional | decorativo | juguetes | hogar-organizacion
 shortDescription: "Descripción corta para la tarjeta del catálogo."
+tags: ["halloween", "gadgets"] # optional, see below
 photos:
   - src: "./foto-1.jpg"
     alt: "Texto alternativo de la foto"
@@ -77,6 +78,19 @@ Spanish to match the rest of the site.
 
 To add a new category, add it to the `CATEGORIES` array in `src/config/site.ts` and use
 the same `slug` in the `category` field of your products.
+
+### Categories vs. tags
+
+`category` is one required value per product (Funcional, Decorativo, Juguetes, Hogar y
+Organización) — it's the main way the catalog is organized. `tags` is a separate,
+optional array for cross-cutting collections a product can belong to alongside its
+category — seasonal drops (Halloween, Navidad) or brand fits (Owala, Yeti), for example.
+A product can have zero, one, or several tags.
+
+The curated list of known tags lives in `TAGS` in `src/config/site.ts` — add a new
+`{ slug, label }` entry there, then reference its `slug` in any product's `tags` array.
+The catalog page only shows a tag filter button for tags that are actually in use, so
+adding a tag to `TAGS` that no product uses yet won't show up until you use it.
 
 The current placeholder photos are generated SVGs (blueprint-style) so the site doesn't
 depend on real photos yet — swap them for real photos whenever you have them; the site

@@ -2,6 +2,7 @@
 name: "Trompo de precisión"
 category: "juguetes"
 shortDescription: "Trompo balanceado con rodamiento para giros largos."
+tags: ["gadgets"]
 photos:
   - src: "./photo-1.svg"
     alt: "Trompo de precisión girando sobre una mesa"

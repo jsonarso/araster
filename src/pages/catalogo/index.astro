@@ -2,10 +2,13 @@
 import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/ProductCard.astro";
 import { getCollection } from "astro:content";
-import { CATEGORIES } from "@/config/site";
+import { CATEGORIES, TAGS } from "@/config/site";
 
 const allProducts = await getCollection("products");
 const sorted = [...allProducts].sort((a, b) => a.data.name.localeCompare(b.data.name, "es"));
+
+const usedTagSlugs = new Set(sorted.flatMap((p) => p.data.tags));
+const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
 ---
 
 <Layout
@@ -21,25 +24,47 @@ const sorted = [...allProducts].sort((a, b) => a.data.name.localeCompare(b.data.
     <div class="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoría">
       <button
         type="button"
-        data-filter="todas"
-        class="filter-btn is-active rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
+        data-category-filter="todas"
+        class="category-filter-btn is-active rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
       >
         Todas
       </button>
       {CATEGORIES.map((cat) => (
         <button
           type="button"
-          data-filter={cat.slug}
-          class="filter-btn rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
+          data-category-filter={cat.slug}
+          class="category-filter-btn rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
         >
           {cat.label}
         </button>
       ))}
     </div>
 
+    {usedTags.length > 0 && (
+      <div class="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por colección">
+        <span class="font-mono text-xs uppercase tracking-widest text-(--color-muted)">Colecciones:</span>
+        <button
+          type="button"
+          data-tag-filter="todas"
+          class="tag-filter-btn is-active rounded-full border border-(--color-border) px-3 py-1 font-mono text-xs text-(--color-fg) transition-colors"
+        >
+          Todas
+        </button>
+        {usedTags.map((tag) => (
+          <button
+            type="button"
+            data-tag-filter={tag.slug}
+            class="tag-filter-btn rounded-full border border-(--color-border) px-3 py-1 font-mono text-xs text-(--color-fg) transition-colors"
+          >
+            {tag.label}
+          </button>
+        ))}
+      </div>
+    )}
+
     <div id="product-grid" class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {sorted.map((product) => (
-        <div data-category={product.data.category}>
+        <div data-category={product.data.category} data-tags={product.data.tags.join(",")}>
           <ProductCard product={product} />
         </div>
       ))}
@@ -52,7 +77,8 @@ const sorted = [...allProducts].sort((a, b) => a.data.name.localeCompare(b.data.
 </Layout>
 
 <style>
-  .filter-btn.is-active {
+  .category-filter-btn.is-active,
+  .tag-filter-btn.is-active {
     background-color: var(--color-accent);
     color: var(--color-bg);
     border-color: var(--color-accent);
@@ -60,23 +86,42 @@ const sorted = [...allProducts].sort((a, b) => a.data.name.localeCompare(b.data.
 </style>
 
 <script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-btn");
+  const categoryButtons = document.querySelectorAll<HTMLButtonElement>(".category-filter-btn");
+  const tagButtons = document.querySelectorAll<HTMLButtonElement>(".tag-filter-btn");
   const items = document.querySelectorAll<HTMLElement>("#product-grid > [data-category]");
   const emptyState = document.getElementById("empty-state");
 
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      buttons.forEach((b) => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
+  let activeCategory = "todas";
+  let activeTag = "todas";
 
-      const filter = btn.dataset.filter;
-      let visibleCount = 0;
-      items.forEach((item) => {
-        const match = filter === "todas" || item.dataset.category === filter;
-        item.style.display = match ? "" : "none";
-        if (match) visibleCount++;
-      });
-      emptyState?.classList.toggle("hidden", visibleCount > 0);
+  function applyFilters() {
+    let visibleCount = 0;
+    items.forEach((item) => {
+      const itemTags = item.dataset.tags?.split(",").filter(Boolean) ?? [];
+      const matchesCategory = activeCategory === "todas" || item.dataset.category === activeCategory;
+      const matchesTag = activeTag === "todas" || itemTags.includes(activeTag);
+      const match = matchesCategory && matchesTag;
+      item.style.display = match ? "" : "none";
+      if (match) visibleCount++;
+    });
+    emptyState?.classList.toggle("hidden", visibleCount > 0);
+  }
+
+  categoryButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      categoryButtons.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      activeCategory = btn.dataset.categoryFilter ?? "todas";
+      applyFilters();
+    });
+  });
+
+  tagButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      tagButtons.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      activeTag = btn.dataset.tagFilter ?? "todas";
+      applyFilters();
     });
   });
 </script>

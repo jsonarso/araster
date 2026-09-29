@@ -2,6 +2,7 @@
 name: "Soporte para auriculares"
 category: "funcional"
 shortDescription: "Base estable para guardar tus auriculares en el escritorio."
+tags: ["gadgets"]
 photos:
   - src: "./photo-1.svg"
     alt: "Soporte para auriculares sobre un escritorio"

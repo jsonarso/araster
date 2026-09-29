@@ -1,7 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
-import { CATEGORIES, WHATSAPP_MESSAGES } from "@/config/site";
+import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
@@ -9,8 +9,9 @@ interface Props {
 }
 
 const { product } = Astro.props;
-const { name, category, shortDescription, photos } = product.data;
+const { name, category, shortDescription, photos, tags } = product.data;
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
+const tagLabels = tags.map((slug) => TAGS.find((t) => t.slug === slug)?.label ?? slug);
 ---
 
 <article class="group corner-brackets flex flex-col overflow-hidden border border-(--color-border) bg-(--color-surface) transition-colors hover:border-(--color-accent)">
@@ -24,9 +25,16 @@ const categoryInfo = CATEGORIES.find((c) => c.slug === category);
     />
   </a>
   <div class="flex flex-1 flex-col gap-2 p-4">
-    <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
-      {categoryInfo?.label ?? category}
-    </span>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+        {categoryInfo?.label ?? category}
+      </span>
+      {tagLabels.map((label) => (
+        <span class="w-fit rounded-full bg-(--color-surface-raised) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-muted)">
+          {label}
+        </span>
+      ))}
+    </div>
     <h3 class="font-mono text-base font-semibold text-(--color-fg)">
       <a href={`/catalogo/${product.id}`} class="hover:text-(--color-accent)">
         {name}

@@ -2,6 +2,7 @@
 name: "Organizador de escritorio modular"
 category: "hogar-organizacion"
 shortDescription: "Módulos combinables para ordenar lápices, clips y más."
+tags: ["gadgets"]
 photos:
   - src: "./photo-1.svg"
     alt: "Organizador de escritorio modular con útiles"

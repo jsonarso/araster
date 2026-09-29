@@ -5,7 +5,7 @@ import Gallery from "@/components/Gallery.tsx";
 import ProductCard from "@/components/ProductCard.astro";
 import { getCollection, render } from "astro:content";
 import { getImage } from "astro:assets";
-import { CATEGORIES, WHATSAPP_MESSAGES } from "@/config/site";
+import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
 
 export async function getStaticPaths() {
   const products = await getCollection("products");
@@ -16,10 +16,11 @@ export async function getStaticPaths() {
 }
 
 const { product } = Astro.props;
-const { name, category, shortDescription, photos, material, size, printTime } = product.data;
+const { name, category, shortDescription, photos, material, size, printTime, tags } = product.data;
 const { Content } = await render(product);
 
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
+const tagLabels = tags.map((slug) => TAGS.find((t) => t.slug === slug)?.label ?? slug);
 
 const optimizedPhotos = await Promise.all(
   photos.map(async (photo) => {
@@ -54,9 +55,16 @@ const related = allProducts
       <Gallery photos={optimizedPhotos} client:load />
 
       <div class="flex flex-col gap-4">
-        <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
-          {categoryInfo?.label ?? category}
-        </span>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+            {categoryInfo?.label ?? category}
+          </span>
+          {tagLabels.map((label) => (
+            <span class="w-fit rounded-full bg-(--color-surface-raised) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-muted)">
+              {label}
+            </span>
+          ))}
+        </div>
         <h1 class="font-mono text-3xl font-bold text-(--color-fg)">{name}</h1>
         <p class="text-(--color-muted)">{shortDescription}</p>
 

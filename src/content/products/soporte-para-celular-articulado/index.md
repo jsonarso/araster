@@ -2,6 +2,7 @@
 name: "Soporte para celular articulado"
 category: "funcional"
 shortDescription: "Soporte ajustable para mirar contenido con las manos libres."
+tags: ["gadgets"]
 photos:
   - src: "./photo-1.svg"
     alt: "Soporte articulado para celular sobre una mesa"

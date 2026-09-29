@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="322.6163163979614" y="363.5402128861939" width="105.72467745548332" height="105.72467745548332" rx="10" transform="rotate(37.41042138888054 375.478655125703 416.40255161393554)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="360.08820835039404" y="342.4733091017573" width="68.8003635447474" height="68.8003635447474" rx="10" transform="rotate(55.21284344383182 394.4883901227677 376.873490874131)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="407.4246156762469" y="276.5825021576986" width="112.82524826602324" height="112.82524826602324" rx="10" transform="rotate(1.571066380278704 463.8372398092585 332.99512629071023)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="594.8639990272299" cy="414.4633103275967" r="64.19380490863406" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <circle cx="447.2519875258449" cy="373.7692642881392" r="108.20830348330006" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#3b82f6">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Funda protectora para vaso Yeti</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#3b82f6" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

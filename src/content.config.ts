@@ -13,6 +13,7 @@ const products = defineCollection({
         "hogar-organizacion",
       ]),
       shortDescription: z.string(),
+      tags: z.array(z.string()).default([]),
       photos: z.array(
         z.object({
           src: image(),

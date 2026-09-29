@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="url(#grid)"/>
+  <rect width="900" height="700" fill="url(#glow)"/>
+  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
+  <rect x="445.64775802923725" y="200.9621080807234" width="121.24068082368032" height="121.24068082368032" rx="10" transform="rotate(21.627239594993757 506.2680984410774 261.58244849256357)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="357.0949960067379" y="240.86010219103662" width="108.71685507181886" height="108.71685507181886" rx="10" transform="rotate(43.93228056092387 411.45342354264733 295.21852972694603)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <rect x="472.4866587773369" y="207.94331550502375" width="66.70292377784052" height="66.70292377784052" rx="10" transform="rotate(24.14475360146945 505.83812066625717 241.294777393944)" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="390.9056067890048" cy="230.62057971983245" r="79.18064476884001" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <circle cx="378.8272977242373" cy="310.22992614667396" r="103.43931267663805" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <g font-family="'JetBrains Mono', monospace" fill="#3b82f6">
+    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Soporte para botella Owala</text>
+    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
+  </g>
+  <g stroke="#3b82f6" stroke-width="1.5" opacity="0.8">
+    <line x1="24" y1="60" x2="24" y2="44" />
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <line x1="876" y1="60" x2="876" y2="44" />
+    <line x1="876" y1="44" x2="860" y2="44" />
+  </g>
+</svg>

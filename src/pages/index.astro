@@ -2,11 +2,13 @@
 import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/ProductCard.astro";
 import WhatsAppButton from "@/components/WhatsAppButton.astro";
-import { getCollection } from "astro:content";
 import { SITE, WHATSAPP_MESSAGES } from "@/config/site";
+import { listProducts, getEnv } from "@/lib/products";
 
-const allProducts = await getCollection("products");
-const featured = allProducts.filter((p) => p.data.featured).slice(0, 6);
+export const prerender = false;
+
+const allProducts = await listProducts(getEnv());
+const featured = allProducts.filter((p) => p.featured).slice(0, 6);
 ---
 
 <Layout title={SITE.name} description={SITE.description}>

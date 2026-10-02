@@ -1,0 +1,39 @@
+---
+import Layout from "@/layouts/Layout.astro";
+
+export const prerender = false;
+
+const hasError = Astro.url.searchParams.get("error") === "1";
+---
+
+<Layout title="Admin" noIndex>
+  <section class="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center px-4 py-16 sm:px-6">
+    <h1 class="font-mono text-2xl font-bold text-(--color-fg)">Acceso admin</h1>
+    <p class="mt-2 text-sm text-(--color-muted)">Ingresá la contraseña para administrar el catálogo.</p>
+
+    {hasError && (
+      <p class="mt-4 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        Contraseña incorrecta.
+      </p>
+    )}
+
+    <form method="POST" action="/api/admin/login" class="mt-6 flex flex-col gap-3">
+      <label class="flex flex-col gap-1.5">
+        <span class="font-mono text-xs uppercase tracking-widest text-(--color-muted)">Contraseña</span>
+        <input
+          type="password"
+          name="password"
+          required
+          autofocus
+          class="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-(--color-fg) outline-none focus-visible:border-(--color-accent)"
+        />
+      </label>
+      <button
+        type="submit"
+        class="mt-2 rounded-md bg-(--color-accent) px-4 py-2 font-medium text-(--color-bg) hover:bg-(--color-accent-strong)"
+      >
+        Entrar
+      </button>
+    </form>
+  </section>
+</Layout>

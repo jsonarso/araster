@@ -1,26 +1,26 @@
 ---
-import { Image } from "astro:assets";
-import type { CollectionEntry } from "astro:content";
 import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
+import { photoUrl, type Product } from "@/lib/products";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
-  product: CollectionEntry<"products">;
+  product: Product;
 }
 
 const { product } = Astro.props;
-const { name, category, shortDescription, photos, tags } = product.data;
+const { name, slug, category, shortDescription, photos, tags } = product;
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
-const tagLabels = tags.map((slug) => TAGS.find((t) => t.slug === slug)?.label ?? slug);
+const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
 ---
 
 <article class="group corner-brackets flex flex-col overflow-hidden border border-(--color-border) bg-(--color-surface) transition-colors hover:border-(--color-accent)">
-  <a href={`/catalogo/${product.id}`} class="block overflow-hidden">
-    <Image
-      src={photos[0].src}
+  <a href={`/catalogo/${slug}`} class="block overflow-hidden">
+    <img
+      src={photoUrl(photos[0].key)}
       alt={photos[0].alt}
       width={600}
       height={467}
+      loading="lazy"
       class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
     />
   </a>
@@ -36,7 +36,7 @@ const tagLabels = tags.map((slug) => TAGS.find((t) => t.slug === slug)?.label ??
       ))}
     </div>
     <h3 class="font-mono text-base font-semibold text-(--color-fg)">
-      <a href={`/catalogo/${product.id}`} class="hover:text-(--color-accent)">
+      <a href={`/catalogo/${slug}`} class="hover:text-(--color-accent)">
         {name}
       </a>
     </h3>

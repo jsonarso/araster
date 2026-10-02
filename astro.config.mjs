@@ -1,12 +1,15 @@
 import { defineConfig } from "astro/config";
+import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
-import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   site: "https://araster.pages.dev",
-  output: "static",
-  integrations: [react(), sitemap()],
+  output: "server",
+  adapter: cloudflare({
+    imageService: "passthrough",
+  }),
+  integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
   },

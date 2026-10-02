@@ -3,31 +3,27 @@ import Layout from "@/layouts/Layout.astro";
 import WhatsAppButton from "@/components/WhatsAppButton.astro";
 import Gallery from "@/components/Gallery.tsx";
 import ProductCard from "@/components/ProductCard.astro";
-import { getCollection, render } from "astro:content";
-import { getImage } from "astro:assets";
 import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
+import { getProduct, listProducts, photoUrl, getEnv } from "@/lib/products";
 
-export async function getStaticPaths() {
-  const products = await getCollection("products");
-  return products.map((product) => ({
-    params: { slug: product.id },
-    props: { product },
-  }));
+export const prerender = false;
+
+const { slug } = Astro.params;
+const env = getEnv();
+const product = slug ? await getProduct(env, slug) : null;
+
+if (!product) {
+  Astro.response.status = 404;
+  return Astro.rewrite("/404");
 }
 
-const { product } = Astro.props;
-const { name, category, shortDescription, photos, material, size, printTime, tags } = product.data;
-const { Content } = await render(product);
+const { name, category, shortDescription, description, photos, material, size, printTime, tags } = product;
 
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
-const tagLabels = tags.map((slug) => TAGS.find((t) => t.slug === slug)?.label ?? slug);
+const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
 
-const optimizedPhotos = await Promise.all(
-  photos.map(async (photo) => {
-    const img = await getImage({ src: photo.src, width: 900, height: 700 });
-    return { src: img.src, alt: photo.alt };
-  })
-);
+const galleryPhotos = photos.map((photo) => ({ src: photoUrl(photo.key), alt: photo.alt }));
+const descriptionParagraphs = description.split(/\n\s*\n/).filter((p) => p.trim());
 
 const specs = [
   { label: "Material", value: material },
@@ -35,13 +31,13 @@ const specs = [
   { label: "Tiempo estimado", value: printTime },
 ].filter((s) => s.value);
 
-const allProducts = await getCollection("products");
+const allProducts = await listProducts(env);
 const related = allProducts
-  .filter((p) => p.data.category === category && p.id !== product.id)
+  .filter((p) => p.category === category && p.slug !== product.slug)
   .slice(0, 3);
 ---
 
-<Layout title={name} description={shortDescription} image={optimizedPhotos[0].src}>
+<Layout title={name} description={shortDescription} image={galleryPhotos[0].src}>
   <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
     <nav class="mb-6 font-mono text-xs text-(--color-muted)" aria-label="Ruta de navegación">
       <a href="/" class="hover:text-(--color-accent)">Inicio</a>
@@ -52,7 +48,7 @@ const related = allProducts
     </nav>
 
     <div class="grid gap-10 md:grid-cols-2">
-      <Gallery photos={optimizedPhotos} client:load />
+      <Gallery photos={galleryPhotos} client:load />
 
       <div class="flex flex-col gap-4">
         <div class="flex flex-wrap items-center gap-1.5">
@@ -79,8 +75,8 @@ const related = allProducts
           </dl>
         )}
 
-        <div class="text-sm leading-relaxed text-(--color-muted) [&_p]:mb-3">
-          <Content />
+        <div class="text-sm leading-relaxed text-(--color-muted)">
+          {descriptionParagraphs.map((paragraph) => <p class="mb-3">{paragraph}</p>)}
         </div>
 
         <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />

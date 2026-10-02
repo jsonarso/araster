@@ -1,13 +1,14 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/ProductCard.astro";
-import { getCollection } from "astro:content";
 import { CATEGORIES, TAGS } from "@/config/site";
+import { listProducts, getEnv } from "@/lib/products";
 
-const allProducts = await getCollection("products");
-const sorted = [...allProducts].sort((a, b) => a.data.name.localeCompare(b.data.name, "es"));
+export const prerender = false;
 
-const usedTagSlugs = new Set(sorted.flatMap((p) => p.data.tags));
+const sorted = await listProducts(getEnv());
+
+const usedTagSlugs = new Set(sorted.flatMap((p) => p.tags));
 const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
 ---
 
@@ -64,7 +65,7 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
 
     <div id="product-grid" class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {sorted.map((product) => (
-        <div data-category={product.data.category} data-tags={product.data.tags.join(",")}>
+        <div data-category={product.category} data-tags={product.tags.join(",")}>
           <ProductCard product={product} />
         </div>
       ))}

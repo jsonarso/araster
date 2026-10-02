@@ -1,0 +1,69 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { CATEGORIES } from "@/config/site";
+import { listProducts, getEnv, photoUrl } from "@/lib/products";
+
+export const prerender = false;
+
+const products = await listProducts(getEnv());
+---
+
+<Layout title="Admin · Catálogo" noIndex>
+  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <h1 class="font-mono text-2xl font-bold text-(--color-fg) sm:text-3xl">Administrar catálogo</h1>
+      <div class="flex gap-2">
+        <a
+          href="/admin/productos/nuevo"
+          class="rounded-md bg-(--color-accent) px-4 py-2 font-mono text-sm text-(--color-bg) hover:bg-(--color-accent-strong)"
+        >
+          + Nuevo producto
+        </a>
+        <form method="POST" action="/api/admin/logout">
+          <button
+            type="submit"
+            class="rounded-md border border-(--color-border) px-4 py-2 font-mono text-sm text-(--color-fg) hover:border-(--color-accent)"
+          >
+            Salir
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {products.length === 0 ? (
+      <p class="mt-10 text-(--color-muted)">Todavía no hay productos. Creá el primero.</p>
+    ) : (
+      <div class="mt-8 flex flex-col divide-y divide-(--color-border) border-y border-(--color-border)">
+        {products.map((p) => (
+          <div class="flex items-center gap-4 py-4">
+            <img
+              src={photoUrl(p.photos[0].key)}
+              alt=""
+              class="h-16 w-16 shrink-0 rounded object-cover"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-mono text-sm font-semibold text-(--color-fg)">{p.name}</p>
+              <p class="text-xs text-(--color-muted)">
+                {CATEGORIES.find((c) => c.slug === p.category)?.label ?? p.category}
+                {p.featured && " · Destacado"}
+              </p>
+            </div>
+            <a
+              href={`/admin/productos/${p.slug}/editar`}
+              class="shrink-0 font-mono text-xs text-(--color-accent) hover:underline"
+            >
+              Editar
+            </a>
+            <a
+              href={`/catalogo/${p.slug}`}
+              target="_blank"
+              class="shrink-0 font-mono text-xs text-(--color-muted) hover:underline"
+            >
+              Ver
+            </a>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+</Layout>

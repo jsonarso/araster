@@ -7,7 +7,7 @@ export const prerender = false;
 export const GET: APIRoute = async () => {
   const products = await listProducts(getEnv());
 
-  const staticPaths = ["/", "/catalogo", "/sobre-nosotros"];
+  const staticPaths = ["/", "/catalogo"];
   const productPaths = products.map((p) => `/catalogo/${p.slug}`);
   const urls = [...staticPaths, ...productPaths];
 

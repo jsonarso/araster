@@ -1,30 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700">
   <defs>
-    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
-      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M 26 0 L 0 0 0 26" fill="none" stroke="#1c1c22" stroke-width="1"/>
     </pattern>
-    <radialGradient id="glow" cx="50%" cy="45%" r="65%">
-      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="thermal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2b6cff"/>
+      <stop offset="30%" stop-color="#00d4ff"/>
+      <stop offset="55%" stop-color="#27e0a0"/>
+      <stop offset="75%" stop-color="#fbe13d"/>
+      <stop offset="100%" stop-color="#ff8a3d"/>
+    </linearGradient>
   </defs>
-  <rect width="900" height="700" fill="#0a0e14"/>
+  <rect width="900" height="700" fill="#0b0b0f"/>
   <rect width="900" height="700" fill="url(#grid)"/>
-  <rect width="900" height="700" fill="url(#glow)"/>
-  <rect x="24" y="24" width="852" height="652" fill="none" stroke="#fb923c" stroke-width="1" opacity="0.35" stroke-dasharray="6 6"/>
-  <rect x="358.2894379777319" y="195.46988074922461" width="139.7666060178385" height="139.7666060178385" rx="10" transform="rotate(44.45703687353853 428.17274098665115 265.35318375814387)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
-  <rect x="444.64917070914487" y="188.04312585761917" width="117.72060158556356" height="117.72060158556356" rx="10" transform="rotate(15.970110304639725 503.50947150192667 246.90342665040095)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
-  <rect x="282.08159207929" y="297.3210841823933" width="155.49233917868338" height="155.49233917868338" rx="10" transform="rotate(2.6627039921761977 359.8277616686317 375.067253771735)" fill="none" stroke="#fb923c" stroke-width="2.5" opacity="0.9"/>
-  <circle cx="450.479078362919" cy="329.80440144418014" r="94.74101635382559" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
-  <circle cx="305.49044609325495" cy="405.29192500528507" r="61.163802156766785" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
-  <g font-family="'JetBrains Mono', monospace" fill="#fb923c">
-    <text x="48" y="644" font-size="26" font-weight="700" letter-spacing="0.5">Pulpo articulado</text>
-    <text x="48" y="670" font-size="14" opacity="0.65" letter-spacing="2">ARASTER · PREVIEW</text>
-  </g>
-  <g stroke="#fb923c" stroke-width="1.5" opacity="0.8">
-    <line x1="24" y1="60" x2="24" y2="44" />
-    <line x1="24" y1="44" x2="40" y2="44" />
-    <line x1="876" y1="60" x2="876" y2="44" />
-    <line x1="876" y1="44" x2="860" y2="44" />
+  <rect x="20" y="20" width="860" height="660" fill="none" stroke="#2a2a33" stroke-width="1"/>
+
+  <circle cx="510" cy="320" r="150" fill="none" stroke="#2a2a33" stroke-width="1.5"/>
+  <circle cx="510" cy="320" r="96.79709204509719" fill="none" stroke="#ff8a3d" stroke-width="2" stroke-dasharray="6 6"/>
+  <line x1="510" y1="150" x2="510" y2="490" stroke="#ff8a3d" stroke-width="1.2"/>
+  <line x1="340" y1="320" x2="680" y2="320" stroke="#ff8a3d" stroke-width="1.2"/>
+  <rect x="455" y="265" width="110" height="110" fill="none" stroke="url(#thermal)" stroke-width="3" transform="rotate(12.903934718530595 510 320)"/>
+
+  <g font-family="Georgia, serif" fill="#ece9e2">
+    <text x="48" y="614" font-size="13" letter-spacing="2" fill="#ff8a3d" font-family="Courier New, monospace">PAT. Nº AR-03D</text>
+    <text x="48" y="650" font-size="30" font-style="italic" font-weight="600">Pulpo articulado</text>
+    <text x="48" y="678" font-size="12" letter-spacing="2" fill="#8f8d9a" font-family="Courier New, monospace">ARASTER · VISTA PRELIMINAR</text>
   </g>
 </svg>

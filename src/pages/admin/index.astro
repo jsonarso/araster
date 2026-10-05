@@ -11,18 +11,18 @@ const products = await listProducts(getEnv());
 <Layout title="Admin · Catálogo" noIndex>
   <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <h1 class="font-mono text-2xl font-bold text-(--color-fg) sm:text-3xl">Administrar catálogo</h1>
+      <h1 class="text-2xl font-semibold text-(--color-fg) sm:text-3xl">Administrar catálogo</h1>
       <div class="flex gap-2">
         <a
           href="/admin/productos/nuevo"
-          class="rounded-md bg-(--color-accent) px-4 py-2 font-mono text-sm text-(--color-bg) hover:bg-(--color-accent-strong)"
+          class="bg-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)"
         >
           + Nuevo producto
         </a>
         <form method="POST" action="/api/admin/logout">
           <button
             type="submit"
-            class="rounded-md border border-(--color-border) px-4 py-2 font-mono text-sm text-(--color-fg) hover:border-(--color-accent)"
+            class="border border-(--color-border) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)"
           >
             Salir
           </button>
@@ -39,7 +39,7 @@ const products = await listProducts(getEnv());
             <img
               src={photoUrl(p.photos[0].key)}
               alt=""
-              class="h-16 w-16 shrink-0 rounded object-cover"
+              class="h-16 w-16 shrink-0 border border-(--color-border) object-cover"
             />
             <div class="min-w-0 flex-1">
               <p class="truncate font-mono text-sm font-semibold text-(--color-fg)">{p.name}</p>

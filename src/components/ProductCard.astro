@@ -5,16 +5,17 @@ import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
   product: Product;
+  index?: number;
 }
 
-const { product } = Astro.props;
+const { product, index } = Astro.props;
 const { name, slug, category, shortDescription, photos, tags } = product;
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
 const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
 ---
 
-<article class="group corner-brackets flex flex-col overflow-hidden border border-(--color-border) bg-(--color-surface) transition-colors hover:border-(--color-accent)">
-  <a href={`/catalogo/${slug}`} class="block overflow-hidden">
+<article class="group flex flex-col overflow-hidden border border-(--color-border) bg-(--color-surface) transition-colors hover:border-(--color-accent)">
+  <a href={`/catalogo/${slug}`} class="relative block overflow-hidden border-b border-(--color-border)">
     <img
       src={photoUrl(photos[0].key)}
       alt={photos[0].alt}
@@ -23,24 +24,29 @@ const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t
       loading="lazy"
       class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
     />
+    {typeof index === "number" && (
+      <span class="fig-label absolute left-2 top-2 bg-[rgba(11,11,15,0.8)] px-1.5 py-0.5">
+        FIG. {String(index).padStart(2, "0")}
+      </span>
+    )}
   </a>
   <div class="flex flex-1 flex-col gap-2 p-4">
     <div class="flex flex-wrap items-center gap-1.5">
-      <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+      <span class="w-fit border border-(--color-accent) px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--color-accent)">
         {categoryInfo?.label ?? category}
       </span>
       {tagLabels.map((label) => (
-        <span class="w-fit rounded-full bg-(--color-surface-raised) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-muted)">
+        <span class="w-fit border border-(--color-border) px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--color-muted)">
           {label}
         </span>
       ))}
     </div>
-    <h3 class="font-mono text-base font-semibold text-(--color-fg)">
+    <h3 class="text-lg font-semibold text-(--color-fg)">
       <a href={`/catalogo/${slug}`} class="hover:text-(--color-accent)">
         {name}
       </a>
     </h3>
-    <p class="flex-1 text-sm text-(--color-muted)">{shortDescription}</p>
+    <p class="flex-1 text-sm italic text-(--color-muted)">{shortDescription}</p>
     <WhatsAppButton
       message={WHATSAPP_MESSAGES.product(name)}
       size="md"

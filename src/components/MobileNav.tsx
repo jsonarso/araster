@@ -24,18 +24,18 @@ export default function MobileNav({ links }: { links: NavLink[] }) {
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 w-10 items-center justify-center rounded-md border border-(--color-border) text-(--color-fg) hover:border-(--color-accent) transition-colors"
+        className="flex h-10 w-10 items-center justify-center border border-(--color-border) text-(--color-fg) hover:border-(--color-accent) transition-colors"
       >
         {open ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <div
         className={cn(
-          "fixed inset-x-0 top-16 bottom-0 z-40 bg-[rgba(10,14,20,0.98)] backdrop-blur-sm transition-opacity duration-150",
+          "fixed inset-x-0 top-16 bottom-0 z-40 bg-[rgba(11,11,15,0.98)] backdrop-blur-sm transition-opacity duration-150",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
       >
-        <nav className="flex flex-col gap-1 p-6 font-mono text-lg" aria-label="Navegación principal">
+        <nav className="flex flex-col gap-1 p-6 font-mono text-base uppercase tracking-wider" aria-label="Navegación principal">
           {links.map((link) => (
             <a
               key={link.href}

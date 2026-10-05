@@ -17,8 +17,11 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
   description="Explorá el catálogo de piezas impresas en 3D de Araster: funcionales, decorativas, juguetes y organización."
 >
   <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-    <h1 class="font-mono text-3xl font-bold text-(--color-fg) sm:text-4xl">Catálogo</h1>
-    <p class="mt-3 max-w-2xl text-(--color-muted)">
+    <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-(--color-accent)">
+      REGISTRO DE PIEZAS — ARASTER
+    </p>
+    <h1 class="mt-2 text-4xl font-semibold text-(--color-fg) sm:text-5xl">Catálogo</h1>
+    <p class="mt-3 max-w-2xl italic text-(--color-muted)">
       Explorá nuestras piezas por categoría. Si algo te gusta, consultanos por WhatsApp con un click.
     </p>
 
@@ -26,7 +29,7 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
       <button
         type="button"
         data-category-filter="todas"
-        class="category-filter-btn is-active rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
+        class="category-filter-btn is-active border border-(--color-border) px-4 py-1.5 font-mono text-xs uppercase tracking-wider text-(--color-fg) transition-colors"
       >
         Todas
       </button>
@@ -34,7 +37,7 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
         <button
           type="button"
           data-category-filter={cat.slug}
-          class="category-filter-btn rounded-full border border-(--color-border) px-4 py-1.5 font-mono text-sm text-(--color-fg) transition-colors"
+          class="category-filter-btn border border-(--color-border) px-4 py-1.5 font-mono text-xs uppercase tracking-wider text-(--color-fg) transition-colors"
         >
           {cat.label}
         </button>
@@ -47,7 +50,7 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
         <button
           type="button"
           data-tag-filter="todas"
-          class="tag-filter-btn is-active rounded-full border border-(--color-border) px-3 py-1 font-mono text-xs text-(--color-fg) transition-colors"
+          class="tag-filter-btn is-active border border-(--color-border) px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-(--color-fg) transition-colors"
         >
           Todas
         </button>
@@ -55,7 +58,7 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
           <button
             type="button"
             data-tag-filter={tag.slug}
-            class="tag-filter-btn rounded-full border border-(--color-border) px-3 py-1 font-mono text-xs text-(--color-fg) transition-colors"
+            class="tag-filter-btn border border-(--color-border) px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-(--color-fg) transition-colors"
           >
             {tag.label}
           </button>
@@ -64,9 +67,9 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
     )}
 
     <div id="product-grid" class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {sorted.map((product) => (
+      {sorted.map((product, i) => (
         <div data-category={product.category} data-tags={product.tags.join(",")}>
-          <ProductCard product={product} />
+          <ProductCard product={product} index={i + 1} />
         </div>
       ))}
     </div>

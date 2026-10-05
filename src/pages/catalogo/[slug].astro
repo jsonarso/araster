@@ -52,23 +52,23 @@ const related = allProducts
 
       <div class="flex flex-col gap-4">
         <div class="flex flex-wrap items-center gap-1.5">
-          <span class="w-fit rounded-full border border-(--color-border) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+          <span class="w-fit border border-(--color-accent) px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--color-accent)">
             {categoryInfo?.label ?? category}
           </span>
           {tagLabels.map((label) => (
-            <span class="w-fit rounded-full bg-(--color-surface-raised) px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-(--color-muted)">
+            <span class="w-fit border border-(--color-border) px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--color-muted)">
               {label}
             </span>
           ))}
         </div>
-        <h1 class="font-mono text-3xl font-bold text-(--color-fg)">{name}</h1>
-        <p class="text-(--color-muted)">{shortDescription}</p>
+        <h1 class="text-3xl font-semibold text-(--color-fg) sm:text-4xl">{name}</h1>
+        <p class="italic text-(--color-muted)">{shortDescription}</p>
 
         {specs.length > 0 && (
           <dl class="grid grid-cols-1 gap-3 border-y border-(--color-border) py-4 sm:grid-cols-3">
             {specs.map((spec) => (
               <div>
-                <dt class="font-mono text-[11px] uppercase tracking-wider text-(--color-muted)">{spec.label}</dt>
+                <dt class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">{spec.label}</dt>
                 <dd class="mt-1 text-sm text-(--color-fg)">{spec.value}</dd>
               </div>
             ))}
@@ -85,7 +85,7 @@ const related = allProducts
 
     {related.length > 0 && (
       <div class="mt-20">
-        <h2 class="font-mono text-2xl font-bold text-(--color-fg)">Piezas relacionadas</h2>
+        <h2 class="text-2xl font-semibold text-(--color-fg)">Piezas relacionadas</h2>
         <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {related.map((p) => <ProductCard product={p} />)}
         </div>

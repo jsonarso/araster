@@ -51,7 +51,7 @@ async function resizeImage(file: File, maxWidth = 1600, quality = 0.85): Promise
 }
 
 const inputClass =
-  "rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus-visible:border-(--color-accent)";
+  "border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus-visible:border-(--color-accent)";
 const labelClass = "flex flex-col gap-1.5";
 const labelTextClass = "font-mono text-xs uppercase tracking-widest text-(--color-muted)";
 
@@ -168,7 +168,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {error && (
-        <p className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        <p className="border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       )}
@@ -204,7 +204,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
                 type="button"
                 onClick={() => toggleTag(t.slug)}
                 className={cn(
-                  "rounded-full border px-3 py-1 font-mono text-xs transition-colors",
+                  "border px-3 py-1 font-mono text-xs uppercase tracking-wider transition-colors",
                   selectedTags.has(t.slug)
                     ? "border-(--color-accent) bg-(--color-accent) text-(--color-bg)"
                     : "border-(--color-border) text-(--color-fg)"
@@ -265,11 +265,11 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
               <div
                 key={p.key}
                 className={cn(
-                  "flex flex-col gap-2 rounded-md border p-2",
+                  "flex flex-col gap-2 border p-2",
                   p.remove ? "border-red-500/50 opacity-50" : "border-(--color-border)"
                 )}
               >
-                <img src={photoUrl(p.key)} alt={p.alt} className="aspect-[4/3] w-full rounded object-cover" />
+                <img src={photoUrl(p.key)} alt={p.alt} className="aspect-[4/3] w-full object-cover" />
                 <input
                   className={cn(inputClass, "text-xs")}
                   placeholder="Texto alternativo"
@@ -292,8 +292,8 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
         {newPhotos.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {newPhotos.map((p, i) => (
-              <div key={p.previewUrl} className="flex flex-col gap-2 rounded-md border border-(--color-border) p-2">
-                <img src={p.previewUrl} alt="" className="aspect-[4/3] w-full rounded object-cover" />
+              <div key={p.previewUrl} className="flex flex-col gap-2 border border-(--color-border) p-2">
+                <img src={p.previewUrl} alt="" className="aspect-[4/3] w-full object-cover" />
                 <input
                   className={cn(inputClass, "text-xs")}
                   placeholder="Texto alternativo"
@@ -326,7 +326,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
       <button
         type="submit"
         disabled={submitting || processingFiles}
-        className="mt-2 w-fit rounded-md bg-(--color-accent) px-5 py-2.5 font-medium text-(--color-bg) hover:bg-(--color-accent-strong) disabled:opacity-50"
+        className="mt-2 w-fit bg-(--color-accent) px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong) disabled:opacity-50"
       >
         {submitting ? "Guardando..." : mode === "create" ? "Crear producto" : "Guardar cambios"}
       </button>

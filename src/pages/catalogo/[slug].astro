@@ -5,6 +5,7 @@ import Gallery from "@/components/Gallery.tsx";
 import ProductCard from "@/components/ProductCard.astro";
 import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
 import { getProduct, listProducts, photoUrl, getEnv } from "@/lib/products";
+import { formatCrc } from "@/lib/pricing";
 
 export const prerender = false;
 
@@ -17,7 +18,7 @@ if (!product) {
   return Astro.rewrite("/404");
 }
 
-const { name, category, shortDescription, description, photos, material, size, printTime, tags } = product;
+const { name, category, shortDescription, description, photos, material, size, printTime, tags, price } = product;
 
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
 const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
@@ -63,6 +64,7 @@ const related = allProducts
         </div>
         <h1 class="text-3xl font-semibold text-(--color-fg) sm:text-4xl">{name}</h1>
         <p class="italic text-(--color-muted)">{shortDescription}</p>
+        {price && <p class="font-mono text-xl text-(--color-accent)">{formatCrc(price)}</p>}
 
         {specs.length > 0 && (
           <dl class="grid grid-cols-1 gap-3 border-y border-(--color-border) py-4 sm:grid-cols-3">

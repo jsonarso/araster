@@ -1,6 +1,7 @@
 ---
 import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
 import { photoUrl, type Product } from "@/lib/products";
+import { formatCrc } from "@/lib/pricing";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
 }
 
 const { product, index } = Astro.props;
-const { name, slug, category, shortDescription, photos, tags } = product;
+const { name, slug, category, shortDescription, photos, tags, price } = product;
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
 const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
 ---
@@ -47,6 +48,7 @@ const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t
       </a>
     </h3>
     <p class="flex-1 text-sm italic text-(--color-muted)">{shortDescription}</p>
+    {price && <p class="font-mono text-sm text-(--color-accent)">{formatCrc(price)}</p>}
     <WhatsAppButton
       message={WHATSAPP_MESSAGES.product(name)}
       size="md"

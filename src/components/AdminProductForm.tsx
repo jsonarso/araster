@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/products";
+import { estimatePriceCrc, formatCrc, formatHours, roundCrc } from "@/lib/pricing";
 
 interface CategoryOption {
   slug: string;
@@ -64,7 +65,19 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   const [material, setMaterial] = useState(initialProduct?.material ?? "");
   const [size, setSize] = useState(initialProduct?.size ?? "");
   const [printTime, setPrintTime] = useState(initialProduct?.printTime ?? "");
+  const [printTimeHours, setPrintTimeHours] = useState(
+    initialProduct?.printTimeHours != null ? String(initialProduct.printTimeHours) : ""
+  );
+  const [filamentGrams, setFilamentGrams] = useState(
+    initialProduct?.filamentGrams != null ? String(initialProduct.filamentGrams) : ""
+  );
+  const [price, setPrice] = useState(initialProduct?.price != null ? String(initialProduct.price) : "");
   const [featured, setFeatured] = useState(initialProduct?.featured ?? false);
+
+  const priceTouchedByUser = useRef(false);
+  const [makerWorldUrl, setMakerWorldUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importPreviewImage, setImportPreviewImage] = useState<string | null>(null);
 
   const [existingPhotos, setExistingPhotos] = useState<ExistingPhoto[]>(
     (initialProduct?.photos ?? []).map((p) => ({ ...p, remove: false }))
@@ -73,6 +86,54 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   const [processingFiles, setProcessingFiles] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const hoursNum = parseFloat(printTimeHours);
+  const gramsNum = parseFloat(filamentGrams);
+  const hasEstimateInputs = !Number.isNaN(hoursNum) && hoursNum > 0 && !Number.isNaN(gramsNum) && gramsNum > 0;
+  const estimate = hasEstimateInputs
+    ? estimatePriceCrc({ printTimeHours: hoursNum, filamentGrams: gramsNum, material })
+    : null;
+
+  useEffect(() => {
+    if (!estimate || priceTouchedByUser.current) return;
+    setPrice(String(roundCrc(estimate.priceCrc)));
+  }, [estimate?.priceCrc]);
+
+  async function handleImportFromMakerWorld() {
+    if (!makerWorldUrl.trim()) return;
+    setImporting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/import-makerworld", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: makerWorldUrl.trim() }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        name?: string | null;
+        description?: string | null;
+        image?: string | null;
+        printTimeHours?: number | null;
+      };
+      if (!res.ok || !data.ok) {
+        setError(data.error ?? "No se pudo importar desde MakerWorld.");
+        return;
+      }
+      if (data.name) setName(data.name);
+      if (data.description) {
+        setShortDescription(data.description.slice(0, 140));
+        setDescription(data.description);
+      }
+      if (data.printTimeHours) setPrintTimeHours(String(data.printTimeHours));
+      if (data.image) setImportPreviewImage(data.image);
+    } catch {
+      setError("Error de red al importar. Probá de nuevo o cargá los datos a mano.");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function toggleTag(slug: string) {
     setSelectedTags((prev) => {
@@ -139,7 +200,11 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
     formData.set("description", description);
     formData.set("material", material);
     formData.set("size", size);
-    formData.set("printTime", printTime);
+    formData.set("printTime", printTime || (hasEstimateInputs ? formatHours(hoursNum) : ""));
+    if (hasEstimateInputs) formData.set("printTimeHours", String(hoursNum));
+    if (!Number.isNaN(gramsNum) && gramsNum > 0) formData.set("filamentGrams", String(gramsNum));
+    const priceNum = parseFloat(price);
+    if (!Number.isNaN(priceNum) && priceNum > 0) formData.set("price", String(priceNum));
     formData.set("featured", featured ? "true" : "false");
     formData.set("altsJson", JSON.stringify(newPhotos.map((p) => p.alt || name)));
     newPhotos.forEach((p) => formData.append("photo", p.file, "photo.jpg"));
@@ -167,6 +232,36 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="border border-(--color-border) bg-(--color-surface) p-4">
+        <span className={labelTextClass}>Importar desde MakerWorld</span>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <input
+            className={cn(inputClass, "flex-1")}
+            placeholder="https://makerworld.com/es/models/..."
+            value={makerWorldUrl}
+            onChange={(e) => setMakerWorldUrl(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={handleImportFromMakerWorld}
+            disabled={importing || !makerWorldUrl.trim()}
+            className="border border-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-accent) hover:bg-[rgba(255,138,61,0.1)] disabled:opacity-50"
+          >
+            {importing ? "Importando..." : "Importar"}
+          </button>
+        </div>
+        <p className="mt-2 text-xs italic text-(--color-muted)">
+          Trae nombre, descripción y tiempo de impresión si están disponibles — el texto puede venir en
+          inglés, revisalo/traducilo abajo antes de guardar. Las fotos las subís vos.
+        </p>
+        {importPreviewImage && (
+          <div className="mt-3 flex items-center gap-2">
+            <img src={importPreviewImage} alt="Referencia de MakerWorld" className="h-16 w-16 border border-(--color-border) object-cover" />
+            <span className="text-xs text-(--color-muted)">Foto de referencia de MakerWorld — no se usa como foto del producto.</span>
+          </div>
+        )}
+      </div>
+
       {error && (
         <p className="border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
@@ -239,15 +334,74 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label className={labelClass}>
           <span className={labelTextClass}>Material (opcional)</span>
-          <input className={inputClass} value={material} onChange={(e) => setMaterial(e.target.value)} />
+          <input className={inputClass} value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="PLA" />
         </label>
         <label className={labelClass}>
           <span className={labelTextClass}>Tamaño (opcional)</span>
           <input className={inputClass} value={size} onChange={(e) => setSize(e.target.value)} />
         </label>
         <label className={labelClass}>
-          <span className={labelTextClass}>Tiempo de impresión (opcional)</span>
-          <input className={inputClass} value={printTime} onChange={(e) => setPrintTime(e.target.value)} />
+          <span className={labelTextClass}>Tiempo de impresión (texto)</span>
+          <input
+            className={inputClass}
+            value={printTime}
+            onChange={(e) => setPrintTime(e.target.value)}
+            placeholder={hasEstimateInputs ? formatHours(hoursNum) : "3 h 20 min"}
+          />
+        </label>
+      </div>
+
+      <div className="border border-(--color-border) bg-(--color-surface) p-4">
+        <span className={labelTextClass}>Cálculo de precio</span>
+        <p className="mt-1 text-xs italic text-(--color-muted)">
+          Completá estos dos datos y el precio sugerido se calcula solo (editable abajo).
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className={labelClass}>
+            <span className={labelTextClass}>Horas de impresión</span>
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              className={inputClass}
+              value={printTimeHours}
+              onChange={(e) => setPrintTimeHours(e.target.value)}
+            />
+          </label>
+          <label className={labelClass}>
+            <span className={labelTextClass}>Gramos de filamento</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              className={inputClass}
+              value={filamentGrams}
+              onChange={(e) => setFilamentGrams(e.target.value)}
+            />
+          </label>
+        </div>
+
+        {estimate && (
+          <p className="mt-3 text-xs text-(--color-muted)">
+            Sugerido: máquina {formatCrc(estimate.machineCostCrc)} + material {formatCrc(estimate.materialCostCrc)} +
+            electricidad {formatCrc(estimate.electricityCostCrc)}, con margen ={" "}
+            <span className="text-(--color-accent)">{formatCrc(roundCrc(estimate.priceCrc))}</span>
+          </p>
+        )}
+
+        <label className={cn(labelClass, "mt-3")}>
+          <span className={labelTextClass}>Precio final (₡)</span>
+          <input
+            type="number"
+            min="0"
+            step="100"
+            className={inputClass}
+            value={price}
+            onChange={(e) => {
+              priceTouchedByUser.current = true;
+              setPrice(e.target.value);
+            }}
+          />
         </label>
       </div>
 

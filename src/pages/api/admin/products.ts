@@ -17,6 +17,12 @@ function jsonError(message: string, status = 400) {
   });
 }
 
+function parseOptionalNumber(value: FormDataEntryValue | null): number | undefined {
+  if (value == null) return undefined;
+  const n = parseFloat(String(value));
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const env = getEnv();
   const form = await request.formData();
@@ -28,6 +34,9 @@ export const POST: APIRoute = async ({ request }) => {
   const material = String(form.get("material") ?? "").trim() || undefined;
   const size = String(form.get("size") ?? "").trim() || undefined;
   const printTime = String(form.get("printTime") ?? "").trim() || undefined;
+  const printTimeHours = parseOptionalNumber(form.get("printTimeHours"));
+  const filamentGrams = parseOptionalNumber(form.get("filamentGrams"));
+  const price = parseOptionalNumber(form.get("price"));
   const featured = form.get("featured") === "true";
 
   let tags: string[] = [];
@@ -71,6 +80,9 @@ export const POST: APIRoute = async ({ request }) => {
     material,
     size,
     printTime,
+    printTimeHours,
+    filamentGrams,
+    price,
     featured,
     photos,
   };

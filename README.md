@@ -37,7 +37,6 @@ src/
     index.astro                # Home (reads featured products from KV)
     catalogo/index.astro       # Catalog with category + tag filters
     catalogo/[slug].astro      # Product detail
-    sobre-nosotros.astro       # About / Contact (statically prerendered)
     sitemap.xml.ts              # Dynamic sitemap (static pages + live product URLs)
     img/[...path].ts            # Streams product photos from the R2 bucket
     admin/
@@ -49,6 +48,9 @@ src/
       login.ts, logout.ts          # Session endpoints
       products.ts                   # POST: create a product
       products/[slug].ts            # PUT: update, DELETE: remove
+      import-makerworld.ts          # POST: best-effort scrape of a MakerWorld URL
+config/pricing.ts                # Cost-based pricing constants (see below)
+lib/pricing.ts                   # Price formula + CRC/hours formatting
 public/                         # favicon, og-image, robots.txt
 wrangler.jsonc                   # R2/KV bindings (main/assets paths are adapter-generated)
 ```
@@ -91,6 +93,44 @@ product can belong to alongside its category — seasonal drops (Halloween, Navi
 brand fits (Owala, Yeti), for example. A product can have zero, one, or several tags.
 To add a new tag or category, add it to `TAGS` or `CATEGORIES` in `src/config/site.ts` —
 the admin form and the catalog filters pick it up automatically.
+
+## Cost-based pricing
+
+When creating or editing a product, entering **print hours** and **filament grams**
+auto-fills a suggested sale price in colones (still editable — the suggestion is a
+starting point, not a lock). The formula:
+
+```
+costo_maquina   = (precio_impresora_usd × tipo_cambio) / horas_vida_util × horas_impresión
+costo_material  = (gramos_filamento / 1000) × (precio_filamento_usd_kg + flete_usd_kg) × tipo_cambio
+costo_electrico = (watts_impresora / 1000) × horas_impresión × precio_kwh_crc
+precio_venta    = (costo_maquina + costo_material + costo_electrico) × (1 + margen%)
+```
+
+Every input is a named constant in **`src/config/pricing.ts`** — printer price, assumed
+lifetime hours, average wattage, filament price per kg (by material, with a fallback
+default), shipping cost per pound, electricity rate, exchange rate, and profit margin.
+Each has a comment noting how confident the research behind it is; the ones marked
+"ESTIMADO" are worth replacing with your own real numbers when you have them. None of
+this updates automatically (the exchange rate especially drifts) — edit the file and
+redeploy when a number needs to change. Changing a constant does **not** retroactively
+change already-saved products' prices, since the computed price is stored on the product
+record itself, not recalculated on every page view.
+
+## Importing a product from MakerWorld
+
+The "Nuevo producto" admin form has an "Importar desde MakerWorld" field: paste a model
+URL and it best-effort scrapes the name, description, and (if findable) an estimated
+print time from the page's Open Graph tags, pre-filling the form. You still review the
+text (it may come back in English — editing it to Spanish takes a few seconds) and upload
+your own photos — MakerWorld's photo is shown only as a small reference thumbnail, never
+used as the actual product photo.
+
+This was built without being able to test it against MakerWorld directly (this
+environment's network policy blocks that domain), so it's worth validating once deployed:
+if it stops returning useful data, MakerWorld likely changed its page markup, and the
+scraping logic in `src/pages/api/admin/import-makerworld.ts` needs an update. Either way,
+the fallback is always available — just fill the form in by hand.
 
 ## Local development
 

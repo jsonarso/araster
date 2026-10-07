@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import { CATEGORIES } from "@/config/site";
 import { listProducts, getEnv, photoUrl } from "@/lib/products";
+import { formatCrc } from "@/lib/pricing";
 
 export const prerender = false;
 
@@ -48,6 +49,9 @@ const products = await listProducts(getEnv());
                 {p.featured && " · Destacado"}
               </p>
             </div>
+            {p.price && (
+              <span class="shrink-0 font-mono text-xs text-(--color-accent)">{formatCrc(p.price)}</span>
+            )}
             <a
               href={`/admin/productos/${p.slug}/editar`}
               class="shrink-0 font-mono text-xs text-(--color-accent) hover:underline"

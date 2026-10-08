@@ -62,7 +62,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set(initialProduct?.tags ?? []));
   const [shortDescription, setShortDescription] = useState(initialProduct?.shortDescription ?? "");
   const [description, setDescription] = useState(initialProduct?.description ?? "");
-  const [material, setMaterial] = useState(initialProduct?.material ?? "");
+  const [material, setMaterial] = useState(initialProduct?.material ?? (mode === "create" ? "PLA Mate" : ""));
   const [size, setSize] = useState(initialProduct?.size ?? "");
   const [printTime, setPrintTime] = useState(initialProduct?.printTime ?? "");
   const [printTimeHours, setPrintTimeHours] = useState(

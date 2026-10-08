@@ -1,6 +1,6 @@
 # Araster
 
-Informational website for Araster, a 3D printing workshop. Showcases a catalog of
+Informational website for Araster, a 3D printing business. Showcases a catalog of
 printed pieces (functional, decorative, toys, and organization) with direct WhatsApp
 contact. No cart, no payments — just showcase the work and make it easy to reach out.
 

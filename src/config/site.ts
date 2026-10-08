@@ -9,8 +9,7 @@ export const SITE = {
   ogImage: "/og-image.svg",
 };
 
-// Placeholder — swap for the real number (with country code, no + no spaces, e.g. "5491122334455")
-export const WHATSAPP_NUMBER = "000000000";
+export const WHATSAPP_NUMBER = "50683044678";
 
 export const SOCIAL = {
   instagram: "https://instagram.com/araster.3d",

@@ -250,7 +250,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
             {importing ? "Importando..." : "Importar"}
           </button>
         </div>
-        <p className="mt-2 text-xs italic text-(--color-muted)">
+        <p className="mt-2 text-xs text-(--color-muted)">
           Trae nombre, descripción y tiempo de impresión si están disponibles — el texto puede venir en
           inglés, revisalo/traducilo abajo antes de guardar. Las fotos las subís vos.
         </p>
@@ -353,7 +353,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
 
       <div className="border border-(--color-border) bg-(--color-surface) p-4">
         <span className={labelTextClass}>Cálculo de precio</span>
-        <p className="mt-1 text-xs italic text-(--color-muted)">
+        <p className="mt-1 text-xs text-(--color-muted)">
           Completá estos dos datos y el precio sugerido se calcula solo (editable abajo).
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">

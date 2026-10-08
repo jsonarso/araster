@@ -63,7 +63,7 @@ const related = allProducts
           ))}
         </div>
         <h1 class="text-3xl font-semibold text-(--color-fg) sm:text-4xl">{name}</h1>
-        <p class="italic text-(--color-muted)">{shortDescription}</p>
+        <p class="text-(--color-muted)">{shortDescription}</p>
         {price && <p class="font-mono text-xl text-(--color-accent)">{formatCrc(price)}</p>}
 
         {specs.length > 0 && (

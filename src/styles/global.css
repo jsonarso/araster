@@ -4,23 +4,21 @@
 @source "../layouts/**/*.astro";
 @source "../pages/**/*.astro";
 
-@import "@fontsource/eb-garamond/400.css";
-@import "@fontsource/eb-garamond/400-italic.css";
-@import "@fontsource/eb-garamond/600.css";
-@import "@fontsource/eb-garamond/600-italic.css";
-@import "@fontsource/courier-prime/400.css";
-@import "@fontsource/courier-prime/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
+@import "@fontsource/jetbrains-mono/700.css";
 
 @theme {
-  --font-sans: "EB Garamond", ui-serif, Georgia, serif;
-  --font-mono: "Courier Prime", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --color-bg: #0b0b0f;
   --color-surface: #141419;
   --color-surface-raised: #1b1b22;
   --color-border: #2a2a33;
   --color-fg: #ece9e2;
-  --color-muted: #8f8d9a;
+  --color-muted: #a8a6b3;
   --color-accent: #ff8a3d;
   --color-accent-strong: #ffa868;
   --color-whatsapp: #25d366;

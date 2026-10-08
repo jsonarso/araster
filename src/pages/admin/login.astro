@@ -9,7 +9,7 @@ const hasError = Astro.url.searchParams.get("error") === "1";
 <Layout title="Admin" noIndex>
   <section class="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center px-4 py-16 sm:px-6">
     <h1 class="text-2xl font-semibold text-(--color-fg)">Acceso admin</h1>
-    <p class="mt-2 text-sm italic text-(--color-muted)">Ingresá la contraseña para administrar el catálogo.</p>
+    <p class="mt-2 text-sm text-(--color-muted)">Ingresá la contraseña para administrar el catálogo.</p>
 
     {hasError && (
       <p class="mt-4 border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">

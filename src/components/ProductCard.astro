@@ -47,7 +47,7 @@ const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t
         {name}
       </a>
     </h3>
-    <p class="flex-1 text-sm italic text-(--color-muted)">{shortDescription}</p>
+    <p class="flex-1 text-sm text-(--color-muted)">{shortDescription}</p>
     {price && <p class="font-mono text-sm text-(--color-accent)">{formatCrc(price)}</p>}
     <WhatsAppButton
       message={WHATSAPP_MESSAGES.product(name)}

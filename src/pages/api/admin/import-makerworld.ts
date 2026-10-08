@@ -38,6 +38,8 @@ function guessPrintTimeHours(html: string): number | null {
   const patterns = [
     /print(?:ing)?\s*time[^0-9]{0,20}(\d+(?:\.\d+)?)\s*h(?:ours?|rs?)?\b/i,
     /(\d+(?:\.\d+)?)\s*h(?:ours?|rs?)?\s*(?:print(?:ing)?\s*time)/i,
+    /tiempo\s*(?:de\s*)?impresi[oó]n[^0-9]{0,20}(\d+(?:\.\d+)?)\s*h(?:oras?|rs?)?\b/i,
+    /(\d+(?:\.\d+)?)\s*h(?:oras?|rs?)?\s*(?:de\s*)?(?:tiempo\s*(?:de\s*)?impresi[oó]n)/i,
   ];
   for (const re of patterns) {
     const match = text.match(re);
@@ -51,6 +53,21 @@ function guessPrintTimeHours(html: string): number | null {
 
 function stripSiteSuffix(title: string): string {
   return title.replace(/\s*[-|–]\s*MakerWorld\s*$/i, "").trim();
+}
+
+/** MakerWorld URLs carry a locale segment right after the host, e.g.
+ * /en/models/123-foo or /es/models/123-foo. Force it to /es/ so the page
+ * (and hopefully its Open Graph tags) come back in Spanish — no translation
+ * service needed if MakerWorld already localizes that content. If the path
+ * doesn't look like /<locale>/models/..., leave it alone rather than guess. */
+function forceSpanishLocale(url: URL): URL {
+  const result = new URL(url.toString());
+  const segments = result.pathname.split("/").filter(Boolean);
+  if (segments[1] === "models") {
+    segments[0] = "es";
+    result.pathname = "/" + segments.join("/");
+  }
+  return result;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -67,9 +84,11 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonError("Solo se admiten links de makerworld.com.");
   }
 
+  const spanishUrl = forceSpanishLocale(parsed);
+
   let html: string;
   try {
-    const res = await fetch(parsed.toString(), {
+    const res = await fetch(spanishUrl.toString(), {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; ArasterImportBot/1.0)" },
     });
     if (!res.ok) {

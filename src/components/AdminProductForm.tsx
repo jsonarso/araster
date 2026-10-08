@@ -251,8 +251,9 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
           </button>
         </div>
         <p className="mt-2 text-xs text-(--color-muted)">
-          Trae nombre, descripción y tiempo de impresión si están disponibles — el texto puede venir en
-          inglés, revisalo/traducilo abajo antes de guardar. Las fotos las subís vos.
+          Trae nombre, descripción y tiempo de impresión si están disponibles, pidiendo la versión en
+          español del modelo cuando MakerWorld la tiene. Si no está traducido, puede venir en inglés —
+          revisalo antes de guardar. Las fotos las subís vos.
         </p>
         {importPreviewImage && (
           <div className="mt-3 flex items-center gap-2">

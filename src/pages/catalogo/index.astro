@@ -1,15 +1,16 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import ProductCard from "@/components/ProductCard.astro";
-import { CATEGORIES, TAGS } from "@/config/site";
-import { listProducts, getEnv } from "@/lib/products";
+import { CATEGORIES } from "@/config/site";
+import { listProducts, listCollections, getEnv } from "@/lib/products";
 
 export const prerender = false;
 
-const sorted = await listProducts(getEnv());
+const env = getEnv();
+const [sorted, collections] = await Promise.all([listProducts(env), listCollections(env)]);
 
 const usedTagSlugs = new Set(sorted.flatMap((p) => p.tags));
-const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
+const usedTags = collections.filter((t) => usedTagSlugs.has(t.slug));
 ---
 
 <Layout
@@ -69,7 +70,7 @@ const usedTags = TAGS.filter((t) => usedTagSlugs.has(t.slug));
     <div id="product-grid" class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {sorted.map((product, i) => (
         <div data-category={product.category} data-tags={product.tags.join(",")}>
-          <ProductCard product={product} index={i + 1} />
+          <ProductCard product={product} index={i + 1} collections={collections} />
         </div>
       ))}
     </div>

@@ -35,19 +35,6 @@ function htmlToText(html: string): string {
     .join("\n\n");
 }
 
-interface MwFilament {
-  type?: string;
-  usedG?: string;
-}
-
-interface MwInstance {
-  title?: string;
-  titleTranslated?: string;
-  prediction?: number; // seconds
-  weight?: number; // grams
-  instanceFilaments?: MwFilament[];
-}
-
 interface MwDesign {
   title?: string;
   titleTranslated?: string;
@@ -56,18 +43,6 @@ interface MwDesign {
   coverUrl?: string;
   tags?: string[];
   tagsTranslated?: string[];
-  instances?: MwInstance[];
-}
-
-/** Prefer a PLA profile (that's what Araster prints), then any profile that
- * reports a print time, then whatever comes first. */
-function pickInstance(instances: MwInstance[]): MwInstance | undefined {
-  const isPla = (i: MwInstance) => i.instanceFilaments?.some((f) => /^PLA/i.test(f.type ?? ""));
-  return (
-    instances.find((i) => isPla(i) && i.prediction) ??
-    instances.find((i) => i.prediction) ??
-    instances[0]
-  );
 }
 
 function modelIdFromUrl(url: URL): string | null {
@@ -120,16 +95,10 @@ export const POST: APIRoute = async ({ request }) => {
   const image = design.coverUrl || null;
   const tags = (design.tagsTranslated?.length ? design.tagsTranslated : design.tags) ?? [];
 
-  const instance = pickInstance(design.instances ?? []);
-  const printTimeHours = instance?.prediction ? Math.round((instance.prediction / 3600) * 10) / 10 : null;
-  const filamentGrams = instance?.weight || null;
-  const filament = instance?.instanceFilaments?.[0];
-  const material = filament?.type || null;
-  const profile = instance?.titleTranslated || instance?.title || "";
-  const infillMatch = profile.match(/(\d+)\s*%\s*(?:de\s*)?(?:infill|relleno)/i);
-  const infillPercent = infillMatch ? parseInt(infillMatch[1], 10) : null;
-  const layerMatch = profile.match(/(\d+(?:\.\d+)?)\s*mm/i);
-  const layerHeightMm = layerMatch ? parseFloat(layerMatch[1]) : null;
+  // Print time / grams are deliberately NOT imported: MakerWorld's profiles are
+  // usually a whole plate (several copies of the piece) sliced on the author's
+  // printer, so they don't describe one piece on ours. The admin enters them
+  // from their own slicer.
 
   if (!name && !description) {
     return jsonError(
@@ -145,11 +114,6 @@ export const POST: APIRoute = async ({ request }) => {
       description,
       image,
       tags,
-      printTimeHours,
-      filamentGrams,
-      material,
-      infillPercent,
-      layerHeightMm,
     }),
     { headers: { "Content-Type": "application/json" } }
   );

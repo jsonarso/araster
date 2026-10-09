@@ -116,6 +116,8 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
         description?: string | null;
         image?: string | null;
         printTimeHours?: number | null;
+        filamentGrams?: number | null;
+        material?: string | null;
       };
       if (!res.ok || !data.ok) {
         setError(data.error ?? "No se pudo importar desde MakerWorld.");
@@ -127,6 +129,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
         setDescription(data.description);
       }
       if (data.printTimeHours) setPrintTimeHours(String(data.printTimeHours));
+      if (data.filamentGrams) setFilamentGrams(String(data.filamentGrams));
       if (data.image) setImportPreviewImage(data.image);
     } catch {
       setError("Error de red al importar. Probá de nuevo o cargá los datos a mano.");

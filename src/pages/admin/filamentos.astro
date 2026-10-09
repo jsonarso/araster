@@ -1,0 +1,122 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import bambuColors from "@/data/bambu-colors.json";
+import { getEnv } from "@/lib/products";
+import { listFilaments, COMMON_MATERIALS, REPRINT_MARGIN, LOW_STOCK_G } from "@/lib/filaments";
+
+export const prerender = false;
+
+const filaments = await listFilaments(getEnv());
+const materials = [...new Set([...COMMON_MATERIALS, ...filaments.map((f) => f.material)])];
+
+const ok = Astro.url.searchParams.get("ok");
+const error = Astro.url.searchParams.get("error");
+
+const inputClass =
+  "border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm text-(--color-fg) focus:border-(--color-accent) focus:outline-none";
+const btnClass =
+  "border border-(--color-border) px-3 py-2 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)";
+---
+
+<Layout title="Filamentos · Admin" noIndex>
+  <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <a href="/admin" class="font-mono text-xs text-(--color-muted) hover:text-(--color-accent)">← Volver</a>
+    <div class="mt-3 flex items-center justify-between gap-4">
+      <h1 class="text-2xl font-semibold text-(--color-fg)">Filamentos</h1>
+      <a href="/admin/consumo" class="bg-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)">Registrar consumo</a>
+    </div>
+    <p class="mt-2 text-sm text-(--color-muted)">
+      Un registro por carrete. En cada producto, los clientes ven como opciones los colores del mismo material que
+      tengan gramos suficientes para una impresión más un {Math.round((REPRINT_MARGIN - 1) * 100)}% extra por si hay que
+      reimprimir. El material tiene que escribirse igual que en el producto (ej. "PLA Mate").
+    </p>
+
+    {ok && <p class="mt-6 border border-(--color-accent) px-3 py-2 text-sm text-(--color-fg)">{ok}</p>}
+    {error && <p class="mt-6 border border-red-500 px-3 py-2 text-sm text-red-500">{error}</p>}
+
+    <div class="mt-8">
+      <label class="block">
+        <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Buscar en el catálogo de Bambu Lab</span>
+        <input
+          id="bambu-search"
+          list="bambu-list"
+          autocomplete="off"
+          placeholder="Pegá el nombre o código, ej. Matte Mandarin Orange (11300) / Refill / 1kg"
+          class={`${inputClass} mt-1 w-full`}
+        />
+      </label>
+      <datalist id="bambu-list">
+        {bambuColors.map((c) => <option value={`${c.material} · ${c.name} (${c.code})`} />)}
+      </datalist>
+      <p id="bambu-status" class="mt-1 text-xs text-(--color-muted)">
+        Completa material, color y tono automáticamente. También podés cargar un carrete a mano abajo.
+      </p>
+    </div>
+
+    <form id="filament-form" method="POST" action="/api/admin/filaments" class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-6">
+      <input type="hidden" name="intent" value="create" />
+      <input type="hidden" name="code" />
+      <input name="material" list="materials" required placeholder="Material" class={`${inputClass} sm:col-span-2`} />
+      <datalist id="materials">{materials.map((m) => <option value={m} />)}</datalist>
+      <input name="colorName" required placeholder="Color (ej. Rojo)" class={`${inputClass} sm:col-span-2`} />
+      <input type="color" name="colorHex" value="#cc0000" aria-label="Tono del color" class="h-full min-h-10 w-full border border-(--color-border) bg-(--color-bg)" />
+      <input name="remainingG" type="number" min="0" step="1" value="1000" required aria-label="Gramos restantes" class={inputClass} />
+      <input name="brand" placeholder="Marca (opcional)" class={`${inputClass} col-span-2 sm:col-span-4`} />
+      <button type="submit" class="col-span-2 bg-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)">
+        Agregar carrete
+      </button>
+    </form>
+
+    {filaments.length === 0 ? (
+      <p class="mt-8 text-(--color-muted)">Todavía no hay carretes. Agregá el primero.</p>
+    ) : (
+      <ul class="mt-8 flex flex-col divide-y divide-(--color-border) border-y border-(--color-border)">
+        {filaments.map((f) => (
+          <li class="flex flex-wrap items-center gap-3 py-3">
+            <span class="h-6 w-6 shrink-0 rounded-full border border-(--color-border)" style={`background:${f.colorHex}`}></span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold text-(--color-fg)">{f.colorName}</p>
+              <p class="text-xs text-(--color-muted)">
+                {f.material}{f.brand && ` · ${f.brand}`}
+                {f.remainingG < LOW_STOCK_G && <span class="ml-2 font-mono text-amber-400">POCO STOCK</span>}
+              </p>
+            </div>
+            <form method="POST" action="/api/admin/filaments" class="flex items-center gap-2">
+              <input type="hidden" name="intent" value="update" />
+              <input type="hidden" name="id" value={f.id} />
+              <input name="remainingG" type="number" min="0" step="1" value={f.remainingG} aria-label="Gramos restantes" class={`${inputClass} w-24`} />
+              <span class="font-mono text-xs text-(--color-muted)">g</span>
+              <button type="submit" class={btnClass}>Guardar</button>
+            </form>
+            <form
+              method="POST"
+              action="/api/admin/filaments"
+              onsubmit="return confirm('¿Eliminar este carrete?')"
+            >
+              <input type="hidden" name="intent" value="delete" />
+              <input type="hidden" name="id" value={f.id} />
+              <button type="submit" class={`${btnClass} hover:border-red-500 hover:text-red-500`}>Eliminar</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>
+
+<script define:vars={{ bambuColors }}>
+  const search = document.getElementById("bambu-search");
+  const status = document.getElementById("bambu-status");
+  const form = document.getElementById("filament-form");
+  search.addEventListener("input", () => {
+    const match = search.value.match(/\((\d{5})\)/) || search.value.match(/\b(\d{5})\b/);
+    const entry = match && bambuColors.find((c) => c.code === match[1]);
+    if (!entry) return;
+    form.elements.material.value = entry.material;
+    form.elements.colorName.value = entry.name;
+    form.elements.colorHex.value = entry.hex;
+    form.elements.code.value = entry.code;
+    form.elements.brand.value = "Bambu Lab";
+    status.textContent = `Listo: ${entry.material} · ${entry.name} (${entry.code}). Revisá los gramos y tocá "Agregar carrete".`;
+  });
+</script>

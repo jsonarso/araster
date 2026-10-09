@@ -1,18 +1,19 @@
 ---
-import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
-import { photoUrl, type Product } from "@/lib/products";
+import { CATEGORIES, WHATSAPP_MESSAGES } from "@/config/site";
+import { photoUrl, type Collection, type Product } from "@/lib/products";
 import { formatCrc } from "@/lib/pricing";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
   product: Product;
   index?: number;
+  collections?: Collection[];
 }
 
-const { product, index } = Astro.props;
+const { product, index, collections = [] } = Astro.props;
 const { name, slug, category, shortDescription, photos, tags, price } = product;
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
-const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
+const tagLabels = tags.map((t) => collections.find((c) => c.slug === t)?.label ?? t);
 ---
 
 <article class="group flex flex-col overflow-hidden border border-(--color-border) bg-(--color-surface) transition-colors hover:border-(--color-accent)">

@@ -3,8 +3,9 @@ import Layout from "@/layouts/Layout.astro";
 import WhatsAppButton from "@/components/WhatsAppButton.astro";
 import Gallery from "@/components/Gallery.tsx";
 import ProductCard from "@/components/ProductCard.astro";
-import { CATEGORIES, TAGS, WHATSAPP_MESSAGES } from "@/config/site";
-import { getProduct, listProducts, photoUrl, getEnv } from "@/lib/products";
+import { CATEGORIES, WHATSAPP_MESSAGES, whatsappLink } from "@/config/site";
+import { getProduct, listProducts, listCollections, photoUrl, getEnv } from "@/lib/products";
+import { availableColors, listFilaments } from "@/lib/filaments";
 import { formatCrc } from "@/lib/pricing";
 
 export const prerender = false;
@@ -20,8 +21,9 @@ if (!product) {
 
 const { name, category, shortDescription, description, photos, material, size, printTime, tags, price } = product;
 
+const collections = await listCollections(env);
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
-const tagLabels = tags.map((t) => TAGS.find((tag) => tag.slug === t)?.label ?? t);
+const tagLabels = tags.map((t) => collections.find((c) => c.slug === t)?.label ?? t);
 
 const galleryPhotos = photos.map((photo) => ({ src: photoUrl(photo.key), alt: photo.alt }));
 const descriptionParagraphs = description.split(/\n\s*\n/).filter((p) => p.trim());
@@ -31,6 +33,9 @@ const specs = [
   { label: "Tamaño", value: size },
   { label: "Tiempo estimado", value: printTime },
 ].filter((s) => s.value);
+
+const colors = availableColors(product, await listFilaments(env));
+const colorLinks = colors.map((c) => whatsappLink(WHATSAPP_MESSAGES.productWithColor(name, c.name)));
 
 const allProducts = await listProducts(env);
 const related = allProducts
@@ -81,7 +86,51 @@ const related = allProducts
           {descriptionParagraphs.map((paragraph) => <p class="mb-3">{paragraph}</p>)}
         </div>
 
-        <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />
+        {colors.length > 0 && (
+          <div class="mt-2" data-color-picker data-default-href={whatsappLink(WHATSAPP_MESSAGES.product(name))}>
+            <span id="color-label" class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Color</span>
+            <div class="relative mt-1 max-w-xs">
+              <button
+                type="button"
+                data-color-button
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-labelledby="color-label"
+                class="flex w-full items-center gap-3 border border-(--color-border) bg-(--color-surface) px-3 py-2 text-left text-sm text-(--color-fg) hover:border-(--color-accent)"
+              >
+                <span data-color-dot class="h-5 w-5 shrink-0 rounded-full border border-(--color-border) bg-transparent"></span>
+                <span data-color-text class="flex-1 truncate text-(--color-muted)">Elegí un color</span>
+                <span aria-hidden="true" class="text-(--color-muted)">▾</span>
+              </button>
+              <ul
+                data-color-list
+                role="listbox"
+                aria-labelledby="color-label"
+                hidden
+                class="absolute z-10 mt-1 max-h-64 w-full overflow-auto border border-(--color-border) bg-(--color-surface) shadow-lg"
+              >
+                {colors.map((c, i) => (
+                  <li
+                    role="option"
+                    tabindex="-1"
+                    aria-selected="false"
+                    data-name={c.name}
+                    data-hex={c.hex}
+                    data-href={colorLinks[i]}
+                    class="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm text-(--color-fg) hover:bg-(--color-border) focus:bg-(--color-border) focus:outline-none"
+                  >
+                    <span class="h-5 w-5 shrink-0 rounded-full border border-(--color-border)" style={`background:${c.hex}`}></span>
+                    {c.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        <div data-wa-cta>
+          <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />
+        </div>
       </div>
     </div>
 
@@ -89,9 +138,53 @@ const related = allProducts
       <div class="mt-20">
         <h2 class="text-2xl font-semibold text-(--color-fg)">Piezas relacionadas</h2>
         <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {related.map((p) => <ProductCard product={p} />)}
+          {related.map((p) => <ProductCard product={p} collections={collections} />)}
         </div>
       </div>
     )}
   </section>
 </Layout>
+
+<script>
+  const picker = document.querySelector<HTMLElement>("[data-color-picker]");
+  const cta = document.querySelector<HTMLAnchorElement>("[data-wa-cta] a");
+  if (picker && cta) {
+    const button = picker.querySelector<HTMLButtonElement>("[data-color-button]")!;
+    const list = picker.querySelector<HTMLElement>("[data-color-list]")!;
+    const dot = picker.querySelector<HTMLElement>("[data-color-dot]")!;
+    const text = picker.querySelector<HTMLElement>("[data-color-text]")!;
+    const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'));
+
+    const setOpen = (open: boolean) => {
+      list.hidden = !open;
+      button.setAttribute("aria-expanded", String(open));
+      if (open) (options.find((o) => o.getAttribute("aria-selected") === "true") ?? options[0])?.focus();
+    };
+    const select = (option: HTMLElement) => {
+      options.forEach((o) => o.setAttribute("aria-selected", String(o === option)));
+      dot.style.background = option.dataset.hex ?? "";
+      text.textContent = option.dataset.name ?? "";
+      text.classList.remove("text-(--color-muted)");
+      cta.href = option.dataset.href ?? picker.dataset.defaultHref ?? cta.href;
+      setOpen(false);
+      button.focus();
+    };
+
+    button.addEventListener("click", () => setOpen(list.hidden));
+    options.forEach((o, i) => {
+      o.addEventListener("click", () => select(o));
+      o.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(o); }
+        else if (e.key === "ArrowDown") { e.preventDefault(); options[Math.min(i + 1, options.length - 1)].focus(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); options[Math.max(i - 1, 0)].focus(); }
+        else if (e.key === "Escape") { setOpen(false); button.focus(); }
+      });
+    });
+    button.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); }
+    });
+    document.addEventListener("click", (e) => {
+      if (!picker.contains(e.target as Node)) setOpen(false);
+    });
+  }
+</script>

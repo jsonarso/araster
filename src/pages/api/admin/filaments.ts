@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getEnv } from "@/lib/products";
-import { getFilament, saveFilament, deleteFilament } from "@/lib/filaments";
+import { getFilament, saveFilament, deleteFilament, recordUsage, undoUsage } from "@/lib/filaments";
+import { getProduct } from "@/lib/products";
 
 export const prerender = false;
 
@@ -42,8 +43,38 @@ export const POST: APIRoute = async ({ request }) => {
     const filament = id ? await getFilament(env, id) : null;
     if (!filament) return back("El carrete no existe.", "error");
     if (!Number.isFinite(grams) || grams < 0) return back("Los gramos deben ser un número válido.", "error");
-    await saveFilament(env, { ...filament, remainingG: Math.round(grams) });
+    const newG = Math.round(grams);
+    // Route through the usage log so the correction is auditable and undoable.
+    if (newG < filament.remainingG) {
+      await recordUsage(env, { filamentId: id, grams: filament.remainingG - newG, kind: "adjust" });
+    } else {
+      await saveFilament(env, { ...filament, remainingG: newG });
+    }
     return back("Gramos actualizados.", "ok");
+  }
+
+  if (intent === "use") {
+    const kind = String(form.get("kind") ?? "print") === "waste" ? "waste" : "print";
+    const productSlug = String(form.get("productSlug") ?? "").trim();
+    const product = productSlug ? await getProduct(env, productSlug) : null;
+    if (!id || !(await getFilament(env, id))) return back("Elegí un carrete.", "error");
+    if (!Number.isFinite(grams) || grams <= 0) return back("Los gramos deben ser mayores a cero.", "error");
+    const entry = await recordUsage(env, {
+      filamentId: id,
+      grams: Math.round(grams),
+      kind,
+      productSlug: product?.slug,
+      productName: product?.name,
+    });
+    return back(
+      `${kind === "waste" ? "Merma" : "Impresión"} registrada: −${entry?.grams ?? 0} g de ${entry?.filamentLabel ?? ""}.`,
+      "ok"
+    );
+  }
+
+  if (intent === "undo") {
+    const entryId = String(form.get("entryId") ?? "");
+    return (await undoUsage(env, entryId)) ? back("Movimiento deshecho.", "ok") : back("No se encontró el movimiento.", "error");
   }
 
   if (intent === "delete") {

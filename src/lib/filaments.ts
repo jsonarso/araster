@@ -76,3 +76,85 @@ export function availableColors(product: Pick<Product, "material" | "filamentGra
   }
   return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, "es"));
 }
+
+// ---- Usage log: every change to a spool's grams is recorded so it can be audited and undone ----
+
+export type UsageKind = "print" | "waste" | "adjust";
+
+export const usageEntrySchema = z.object({
+  id: z.string(),
+  at: z.string(),
+  filamentId: z.string(),
+  filamentLabel: z.string(),
+  productSlug: z.string().optional(),
+  productName: z.string().optional(),
+  /** Grams taken out of the spool (negative when an adjustment adds grams). */
+  grams: z.number(),
+  kind: z.enum(["print", "waste", "adjust"]),
+});
+
+export type UsageEntry = z.infer<typeof usageEntrySchema>;
+
+/** Spools below this are flagged in the admin so they can be restocked. */
+export const LOW_STOCK_G = 150;
+
+const LOG_PREFIX = "usage:";
+
+export function filamentLabel(f: Pick<Filament, "material" | "colorName">): string {
+  return `${f.material} · ${f.colorName}`;
+}
+
+/** Takes `grams` out of a spool (never below zero) and records it. Returns the entry, or null if the spool is gone. */
+export async function recordUsage(
+  env: Env,
+  input: { filamentId: string; grams: number; kind: UsageKind; productSlug?: string; productName?: string }
+): Promise<UsageEntry | null> {
+  const filament = await getFilament(env, input.filamentId);
+  if (!filament) return null;
+  const remaining = Math.max(0, filament.remainingG - input.grams);
+  // Log what was actually taken so an undo restores exactly that.
+  const taken = filament.remainingG - remaining;
+  await saveFilament(env, { ...filament, remainingG: remaining });
+  const now = new Date();
+  const entry: UsageEntry = {
+    // Reverse-sorted key so the newest entries list first.
+    id: `${String(9999999999999 - now.getTime())}-${crypto.randomUUID().slice(0, 6)}`,
+    at: now.toISOString(),
+    filamentId: filament.id,
+    filamentLabel: filamentLabel(filament),
+    productSlug: input.productSlug,
+    productName: input.productName,
+    grams: taken,
+    kind: input.kind,
+  };
+  await env.PRODUCTS_KV.put(LOG_PREFIX + entry.id, JSON.stringify(entry));
+  return entry;
+}
+
+export async function listUsage(env: Env, limit = 40): Promise<UsageEntry[]> {
+  const { keys } = await env.PRODUCTS_KV.list({ prefix: LOG_PREFIX, limit });
+  const entries = await Promise.all(
+    keys.map(async (k) => {
+      const raw = await env.PRODUCTS_KV.get(k.name);
+      if (!raw) return null;
+      const parsed = usageEntrySchema.safeParse(JSON.parse(raw));
+      return parsed.success ? parsed.data : null;
+    })
+  );
+  return entries.filter((e): e is UsageEntry => e !== null);
+}
+
+/** Puts the grams back on the spool (if it still exists) and removes the entry. */
+export async function undoUsage(env: Env, id: string): Promise<boolean> {
+  const raw = await env.PRODUCTS_KV.get(LOG_PREFIX + id);
+  if (!raw) return false;
+  const parsed = usageEntrySchema.safeParse(JSON.parse(raw));
+  if (parsed.success) {
+    const filament = await getFilament(env, parsed.data.filamentId);
+    if (filament) {
+      await saveFilament(env, { ...filament, remainingG: Math.max(0, filament.remainingG + parsed.data.grams) });
+    }
+  }
+  await env.PRODUCTS_KV.delete(LOG_PREFIX + id);
+  return true;
+}

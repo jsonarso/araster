@@ -1,0 +1,123 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getEnv, listProducts } from "@/lib/products";
+import { listFilaments, listUsage, filamentLabel } from "@/lib/filaments";
+
+export const prerender = false;
+
+const env = getEnv();
+const [products, filaments, usage] = await Promise.all([listProducts(env), listFilaments(env), listUsage(env)]);
+
+const ok = Astro.url.searchParams.get("ok");
+const error = Astro.url.searchParams.get("error");
+
+const kindLabel = { print: "Impresión", waste: "Merma", adjust: "Ajuste" } as const;
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleString("es-CR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Costa_Rica" });
+
+const inputClass =
+  "border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm text-(--color-fg) focus:border-(--color-accent) focus:outline-none";
+const btnClass =
+  "border border-(--color-border) px-3 py-2 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)";
+---
+
+<Layout title="Consumo · Admin" noIndex>
+  <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <a href="/admin/filamentos" class="font-mono text-xs text-(--color-muted) hover:text-(--color-accent)">← Filamentos</a>
+    <h1 class="mt-3 text-2xl font-semibold text-(--color-fg)">Registrar consumo</h1>
+    <p class="mt-2 text-sm text-(--color-muted)">
+      Elegí el producto, el carrete y los gramos (se completan con los del producto). "Falló" descuenta de nuevo y queda
+      anotado como merma.
+    </p>
+
+    {ok && <p class="mt-6 border border-(--color-accent) px-3 py-2 text-sm text-(--color-fg)">{ok}</p>}
+    {error && <p class="mt-6 border border-red-500 px-3 py-2 text-sm text-red-500">{error}</p>}
+
+    {filaments.length === 0 ? (
+      <p class="mt-8 text-(--color-muted)">Primero cargá tus carretes en <a class="text-(--color-accent) underline" href="/admin/filamentos">Filamentos</a>.</p>
+    ) : (
+      <form id="use-form" method="POST" action="/api/admin/filaments" class="mt-8 grid gap-3 sm:grid-cols-2">
+        <input type="hidden" name="intent" value="use" />
+        <label class="block sm:col-span-2">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Producto</span>
+          <select name="productSlug" class={`${inputClass} mt-1 w-full`}>
+            <option value="" data-grams="" data-material="">— Sin producto (gramos a mano) —</option>
+            {products.map((p) => (
+              <option value={p.slug} data-grams={p.filamentGrams ?? ""} data-material={p.material ?? ""}>
+                {p.name}{p.filamentGrams ? ` · ${p.filamentGrams} g` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label class="block">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Carrete</span>
+          <select name="id" required class={`${inputClass} mt-1 w-full`}>
+            {filaments.map((f) => (
+              <option value={f.id} data-material={f.material}>{filamentLabel(f)} — {f.remainingG} g</option>
+            ))}
+          </select>
+        </label>
+        <label class="block">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Gramos</span>
+          <input name="remainingG" type="number" min="1" step="1" required class={`${inputClass} mt-1 w-full`} />
+        </label>
+        <div class="flex gap-2 sm:col-span-2">
+          <button type="submit" name="kind" value="print" class="bg-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)">
+            Imprimí esto
+          </button>
+          <button type="submit" name="kind" value="waste" class={`${btnClass} hover:border-amber-400 hover:text-amber-400`}>
+            Falló, reimprimir
+          </button>
+        </div>
+      </form>
+    )}
+
+    <h2 class="mt-12 text-lg font-semibold text-(--color-fg)">Últimos movimientos</h2>
+    {usage.length === 0 ? (
+      <p class="mt-3 text-sm text-(--color-muted)">Todavía no hay movimientos.</p>
+    ) : (
+      <ul class="mt-3 flex flex-col divide-y divide-(--color-border) border-y border-(--color-border)">
+        {usage.map((u) => (
+          <li class="flex flex-wrap items-center gap-3 py-3">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm text-(--color-fg)">
+                <span class={u.kind === "waste" ? "text-amber-400" : ""}>{kindLabel[u.kind]}</span>
+                · {u.filamentLabel}{u.productName && ` · ${u.productName}`}
+              </p>
+              <p class="text-xs text-(--color-muted)">{fmtDate(u.at)}</p>
+            </div>
+            <span class="font-mono text-sm text-(--color-fg)">−{u.grams} g</span>
+            <form method="POST" action="/api/admin/filaments" onsubmit="return confirm('¿Deshacer este movimiento? Se devuelven los gramos al carrete.')">
+              <input type="hidden" name="intent" value="undo" />
+              <input type="hidden" name="entryId" value={u.id} />
+              <button type="submit" class={btnClass}>Deshacer</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>
+
+<script is:inline>
+  (function () {
+    var form = document.getElementById("use-form");
+    if (!form) return;
+    var norm = function (m) {
+      return m.trim().toLowerCase().replace(/\s+/g, " ").replace(/\bmate\b/g, "matte");
+    };
+    var product = form.querySelector("select[name=productSlug]");
+    var spool = form.querySelector("select[name=id]");
+    var grams = form.querySelector("input[name=remainingG]");
+    product.addEventListener("change", function () {
+      var opt = product.selectedOptions[0];
+      if (opt.dataset.grams) grams.value = opt.dataset.grams;
+      // Prefer spools of the product's material.
+      var material = opt.dataset.material ? norm(opt.dataset.material) : "";
+      var match = Array.prototype.find.call(spool.options, function (o) {
+        return material && norm(o.dataset.material || "") === material;
+      });
+      if (match) spool.value = match.value;
+    });
+  })();
+</script>

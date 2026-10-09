@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import bambuColors from "@/data/bambu-colors.json";
 import { getEnv } from "@/lib/products";
-import { listFilaments, COMMON_MATERIALS, REPRINT_MARGIN } from "@/lib/filaments";
+import { listFilaments, COMMON_MATERIALS, REPRINT_MARGIN, LOW_STOCK_G } from "@/lib/filaments";
 
 export const prerender = false;
 
@@ -21,7 +21,10 @@ const btnClass =
 <Layout title="Filamentos · Admin" noIndex>
   <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
     <a href="/admin" class="font-mono text-xs text-(--color-muted) hover:text-(--color-accent)">← Volver</a>
-    <h1 class="mt-3 text-2xl font-semibold text-(--color-fg)">Filamentos</h1>
+    <div class="mt-3 flex items-center justify-between gap-4">
+      <h1 class="text-2xl font-semibold text-(--color-fg)">Filamentos</h1>
+      <a href="/admin/consumo" class="bg-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)">Registrar consumo</a>
+    </div>
     <p class="mt-2 text-sm text-(--color-muted)">
       Un registro por carrete. En cada producto, los clientes ven como opciones los colores del mismo material que
       tengan gramos suficientes para una impresión más un {Math.round((REPRINT_MARGIN - 1) * 100)}% extra por si hay que
@@ -73,7 +76,10 @@ const btnClass =
             <span class="h-6 w-6 shrink-0 rounded-full border border-(--color-border)" style={`background:${f.colorHex}`}></span>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-semibold text-(--color-fg)">{f.colorName}</p>
-              <p class="text-xs text-(--color-muted)">{f.material}{f.brand && ` · ${f.brand}`}</p>
+              <p class="text-xs text-(--color-muted)">
+                {f.material}{f.brand && ` · ${f.brand}`}
+                {f.remainingG < LOW_STOCK_G && <span class="ml-2 font-mono text-amber-400">POCO STOCK</span>}
+              </p>
             </div>
             <form method="POST" action="/api/admin/filaments" class="flex items-center gap-2">
               <input type="hidden" name="intent" value="update" />

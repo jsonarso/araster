@@ -19,7 +19,7 @@ if (!product) {
   return Astro.rewrite("/404");
 }
 
-const { name, category, shortDescription, description, photos, material, size, printTime, tags, price } = product;
+const { name, category, shortDescription, description, photos, material, size, tags, price } = product;
 
 const collections = await listCollections(env);
 const categoryInfo = CATEGORIES.find((c) => c.slug === category);
@@ -31,7 +31,6 @@ const descriptionParagraphs = description.split(/\n\s*\n/).filter((p) => p.trim(
 const specs = [
   { label: "Material", value: material },
   { label: "Tamaño", value: size },
-  { label: "Tiempo estimado", value: printTime },
 ].filter((s) => s.value);
 
 const colors = availableColors(product, await listFilaments(env));

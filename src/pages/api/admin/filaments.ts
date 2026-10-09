@@ -21,6 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
     const colorName = String(form.get("colorName") ?? "").trim();
     const colorHex = String(form.get("colorHex") ?? "").trim();
     const brand = String(form.get("brand") ?? "").trim();
+    const code = String(form.get("code") ?? "").trim() || undefined;
     if (!material || !colorName) return back("Material y nombre del color son obligatorios.", "error");
     if (!/^#[0-9a-fA-F]{6}$/.test(colorHex)) return back("Elegí un color válido.", "error");
     if (!Number.isFinite(grams) || grams < 0) return back("Los gramos deben ser un número válido.", "error");
@@ -30,6 +31,7 @@ export const POST: APIRoute = async ({ request }) => {
       colorName,
       colorHex,
       brand,
+      code,
       remainingG: Math.round(grams),
       createdAt: new Date().toISOString(),
     });

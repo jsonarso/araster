@@ -7,6 +7,7 @@ export const filamentSchema = z.object({
   colorName: z.string().min(1),
   colorHex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   brand: z.string().default(""),
+  code: z.string().optional(),
   remainingG: z.number().min(0),
   createdAt: z.string(),
 });
@@ -21,7 +22,8 @@ export const REPRINT_MARGIN = 1.15;
 export const COMMON_MATERIALS = ["PLA", "PLA Mate", "PLA Silk", "PETG", "TPU", "ABS"];
 
 function normalizeMaterial(m: string): string {
-  return m.trim().toLowerCase().replace(/\s+/g, " ");
+  // "mate" (Spanish spelling) and "matte" (Bambu Lab) are the same finish.
+  return m.trim().toLowerCase().replace(/\s+/g, " ").replace(/\bmate\b/g, "matte");
 }
 
 export async function listFilaments(env: Env): Promise<Filament[]> {

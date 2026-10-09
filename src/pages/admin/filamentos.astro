@@ -1,5 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import bambuColors from "@/data/bambu-colors.json";
 import { getEnv } from "@/lib/products";
 import { listFilaments, COMMON_MATERIALS, REPRINT_MARGIN } from "@/lib/filaments";
 
@@ -30,8 +31,28 @@ const btnClass =
     {ok && <p class="mt-6 border border-(--color-accent) px-3 py-2 text-sm text-(--color-fg)">{ok}</p>}
     {error && <p class="mt-6 border border-red-500 px-3 py-2 text-sm text-red-500">{error}</p>}
 
-    <form method="POST" action="/api/admin/filaments" class="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-6">
+    <div class="mt-8">
+      <label class="block">
+        <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Buscar en el catálogo de Bambu Lab</span>
+        <input
+          id="bambu-search"
+          list="bambu-list"
+          autocomplete="off"
+          placeholder="Pegá el nombre o código, ej. Matte Mandarin Orange (11300) / Refill / 1kg"
+          class={`${inputClass} mt-1 w-full`}
+        />
+      </label>
+      <datalist id="bambu-list">
+        {bambuColors.map((c) => <option value={`${c.material} · ${c.name} (${c.code})`} />)}
+      </datalist>
+      <p id="bambu-status" class="mt-1 text-xs text-(--color-muted)">
+        Completa material, color y tono automáticamente. También podés cargar un carrete a mano abajo.
+      </p>
+    </div>
+
+    <form id="filament-form" method="POST" action="/api/admin/filaments" class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-6">
       <input type="hidden" name="intent" value="create" />
+      <input type="hidden" name="code" />
       <input name="material" list="materials" required placeholder="Material" class={`${inputClass} sm:col-span-2`} />
       <datalist id="materials">{materials.map((m) => <option value={m} />)}</datalist>
       <input name="colorName" required placeholder="Color (ej. Rojo)" class={`${inputClass} sm:col-span-2`} />
@@ -76,3 +97,20 @@ const btnClass =
     )}
   </section>
 </Layout>
+
+<script define:vars={{ bambuColors }}>
+  const search = document.getElementById("bambu-search");
+  const status = document.getElementById("bambu-status");
+  const form = document.getElementById("filament-form");
+  search.addEventListener("input", () => {
+    const match = search.value.match(/\((\d{5})\)/) || search.value.match(/\b(\d{5})\b/);
+    const entry = match && bambuColors.find((c) => c.code === match[1]);
+    if (!entry) return;
+    form.elements.material.value = entry.material;
+    form.elements.colorName.value = entry.name;
+    form.elements.colorHex.value = entry.hex;
+    form.elements.code.value = entry.code;
+    form.elements.brand.value = "Bambu Lab";
+    status.textContent = `Listo: ${entry.material} · ${entry.name} (${entry.code}). Revisá los gramos y tocá "Agregar carrete".`;
+  });
+</script>

@@ -9,65 +9,70 @@ function jsonError(message: string, status = 400) {
   });
 }
 
-function extractMeta(html: string, property: string): string | null {
-  const re = new RegExp(
-    `<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']*)["']`,
-    "i"
-  );
-  const match = html.match(re);
-  return match ? decodeHtmlEntities(match[1]) : null;
-}
-
 function decodeHtmlEntities(s: string): string {
   return s
-    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ");
+    .replace(/&amp;/g, "&");
 }
 
-/** Best-effort search for a print-time estimate near the words "print time" /
- * "tiempo de impresión" in the raw HTML. MakerWorld's exact markup isn't
- * something we've been able to verify from this environment, so this is a
- * speculative pattern match — it may simply find nothing, which is fine, the
- * admin just fills that field in manually. */
-function guessPrintTimeHours(html: string): number | null {
-  const text = html.replace(/<[^>]+>/g, " ");
-  const patterns = [
-    /print(?:ing)?\s*time[^0-9]{0,20}(\d+(?:\.\d+)?)\s*h(?:ours?|rs?)?\b/i,
-    /(\d+(?:\.\d+)?)\s*h(?:ours?|rs?)?\s*(?:print(?:ing)?\s*time)/i,
-    /tiempo\s*(?:de\s*)?impresi[oó]n[^0-9]{0,20}(\d+(?:\.\d+)?)\s*h(?:oras?|rs?)?\b/i,
-    /(\d+(?:\.\d+)?)\s*h(?:oras?|rs?)?\s*(?:de\s*)?(?:tiempo\s*(?:de\s*)?impresi[oó]n)/i,
-  ];
-  for (const re of patterns) {
-    const match = text.match(re);
-    if (match) {
-      const hours = parseFloat(match[1]);
-      if (!Number.isNaN(hours) && hours > 0 && hours < 1000) return hours;
-    }
-  }
-  return null;
+/** MakerWorld descriptions are rich-text HTML with a few custom wrapper tags
+ * (<boostme>, <commercialme>) used for the "support the creator" blocks. Drop
+ * those and flatten the rest to plain text with paragraph breaks. */
+function htmlToText(html: string): string {
+  const text = html
+    .replace(/<(boostme|commercialme)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<\/(p|h[1-6]|li|div|figure)>|<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "");
+  return decodeHtmlEntities(text)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join("\n\n");
 }
 
-function stripSiteSuffix(title: string): string {
-  return title.replace(/\s*[-|–]\s*MakerWorld\s*$/i, "").trim();
+interface MwFilament {
+  type?: string;
+  usedG?: string;
 }
 
-/** MakerWorld URLs carry a locale segment right after the host, e.g.
- * /en/models/123-foo or /es/models/123-foo. Force it to /es/ so the page
- * (and hopefully its Open Graph tags) come back in Spanish — no translation
- * service needed if MakerWorld already localizes that content. If the path
- * doesn't look like /<locale>/models/..., leave it alone rather than guess. */
-function forceSpanishLocale(url: URL): URL {
-  const result = new URL(url.toString());
-  const segments = result.pathname.split("/").filter(Boolean);
-  if (segments[1] === "models") {
-    segments[0] = "es";
-    result.pathname = "/" + segments.join("/");
-  }
-  return result;
+interface MwInstance {
+  title?: string;
+  titleTranslated?: string;
+  prediction?: number; // seconds
+  weight?: number; // grams
+  instanceFilaments?: MwFilament[];
+}
+
+interface MwDesign {
+  title?: string;
+  titleTranslated?: string;
+  summary?: string;
+  summaryTranslated?: string;
+  coverUrl?: string;
+  tags?: string[];
+  tagsTranslated?: string[];
+  instances?: MwInstance[];
+}
+
+/** Prefer a PLA profile (that's what Araster prints), then any profile that
+ * reports a print time, then whatever comes first. */
+function pickInstance(instances: MwInstance[]): MwInstance | undefined {
+  const isPla = (i: MwInstance) => i.instanceFilaments?.some((f) => /^PLA/i.test(f.type ?? ""));
+  return (
+    instances.find((i) => isPla(i) && i.prediction) ??
+    instances.find((i) => i.prediction) ??
+    instances[0]
+  );
+}
+
+function modelIdFromUrl(url: URL): string | null {
+  const match = url.pathname.match(/\/models\/(\d+)/);
+  return match ? match[1] : null;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -84,26 +89,47 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonError("Solo se admiten links de makerworld.com.");
   }
 
-  const spanishUrl = forceSpanishLocale(parsed);
+  const modelId = modelIdFromUrl(parsed);
+  if (!modelId) {
+    return jsonError("El link no parece ser de un modelo de MakerWorld (/models/<número>-nombre).");
+  }
 
-  let html: string;
+  // The HTML page sits behind a Cloudflare challenge, but the JSON API the
+  // frontend itself uses does not. X-BBL-Language makes it return the *Translated
+  // fields (title, summary, tags) in Spanish.
+  let design: MwDesign;
   try {
-    const res = await fetch(spanishUrl.toString(), {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; ArasterImportBot/1.0)" },
+    const res = await fetch(`https://makerworld.com/api/v1/design-service/design/${modelId}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; ArasterImportBot/1.0)",
+        Accept: "application/json",
+        "X-BBL-Language": "es",
+      },
     });
     if (!res.ok) {
       return jsonError(`MakerWorld respondió con error (${res.status}). Probá de nuevo o cargá los datos a mano.`, 502);
     }
-    html = await res.text();
+    design = (await res.json()) as MwDesign;
   } catch {
     return jsonError("No se pudo conectar con MakerWorld. Probá de nuevo o cargá los datos a mano.", 502);
   }
 
-  const rawTitle = extractMeta(html, "og:title");
-  const name = rawTitle ? stripSiteSuffix(rawTitle) : null;
-  const description = extractMeta(html, "og:description");
-  const image = extractMeta(html, "og:image");
-  const printTimeHours = guessPrintTimeHours(html);
+  const name = (design.titleTranslated || design.title || "").trim() || null;
+  const summaryHtml = design.summaryTranslated || design.summary || "";
+  const description = summaryHtml ? htmlToText(summaryHtml) || null : null;
+  const image = design.coverUrl || null;
+  const tags = (design.tagsTranslated?.length ? design.tagsTranslated : design.tags) ?? [];
+
+  const instance = pickInstance(design.instances ?? []);
+  const printTimeHours = instance?.prediction ? Math.round((instance.prediction / 3600) * 10) / 10 : null;
+  const filamentGrams = instance?.weight || null;
+  const filament = instance?.instanceFilaments?.[0];
+  const material = filament?.type || null;
+  const profile = instance?.titleTranslated || instance?.title || "";
+  const infillMatch = profile.match(/(\d+)\s*%\s*(?:de\s*)?(?:infill|relleno)/i);
+  const infillPercent = infillMatch ? parseInt(infillMatch[1], 10) : null;
+  const layerMatch = profile.match(/(\d+(?:\.\d+)?)\s*mm/i);
+  const layerHeightMm = layerMatch ? parseFloat(layerMatch[1]) : null;
 
   if (!name && !description) {
     return jsonError(
@@ -113,7 +139,18 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   return new Response(
-    JSON.stringify({ ok: true, name, description, image, printTimeHours }),
+    JSON.stringify({
+      ok: true,
+      name,
+      description,
+      image,
+      tags,
+      printTimeHours,
+      filamentGrams,
+      material,
+      infillPercent,
+      layerHeightMm,
+    }),
     { headers: { "Content-Type": "application/json" } }
   );
 };

@@ -3,8 +3,9 @@ import Layout from "@/layouts/Layout.astro";
 import WhatsAppButton from "@/components/WhatsAppButton.astro";
 import Gallery from "@/components/Gallery.tsx";
 import ProductCard from "@/components/ProductCard.astro";
-import { CATEGORIES, WHATSAPP_MESSAGES } from "@/config/site";
+import { CATEGORIES, WHATSAPP_MESSAGES, whatsappLink } from "@/config/site";
 import { getProduct, listProducts, listCollections, photoUrl, getEnv } from "@/lib/products";
+import { availableColors, listFilaments } from "@/lib/filaments";
 import { formatCrc } from "@/lib/pricing";
 
 export const prerender = false;
@@ -32,6 +33,9 @@ const specs = [
   { label: "Tamaño", value: size },
   { label: "Tiempo estimado", value: printTime },
 ].filter((s) => s.value);
+
+const colors = availableColors(product, await listFilaments(env));
+const colorLinks = colors.map((c) => whatsappLink(WHATSAPP_MESSAGES.productWithColor(name, c.name)));
 
 const allProducts = await listProducts(env);
 const related = allProducts
@@ -82,7 +86,29 @@ const related = allProducts
           {descriptionParagraphs.map((paragraph) => <p class="mb-3">{paragraph}</p>)}
         </div>
 
-        <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />
+        {colors.length > 0 && (
+          <fieldset class="mt-2" data-color-picker data-default-href={whatsappLink(WHATSAPP_MESSAGES.product(name))}>
+            <legend class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">
+              Color: <span data-color-label class="text-(--color-fg)">elegí uno</span>
+            </legend>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {colors.map((c, i) => (
+                <label class="cursor-pointer" title={c.name}>
+                  <input type="radio" name="color" value={c.name} data-href={colorLinks[i]} class="peer sr-only" />
+                  <span
+                    class="block h-9 w-9 rounded-full border border-(--color-border) peer-checked:ring-2 peer-checked:ring-(--color-accent) peer-checked:ring-offset-2 peer-checked:ring-offset-(--color-bg) peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2"
+                    style={`background:${c.hex}`}
+                  ></span>
+                  <span class="sr-only">{c.name}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        <div data-wa-cta>
+          <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />
+        </div>
       </div>
     </div>
 
@@ -96,3 +122,17 @@ const related = allProducts
     )}
   </section>
 </Layout>
+
+<script>
+  const picker = document.querySelector<HTMLElement>("[data-color-picker]");
+  const cta = document.querySelector<HTMLAnchorElement>("[data-wa-cta] a");
+  const label = document.querySelector<HTMLElement>("[data-color-label]");
+  if (picker && cta) {
+    picker.addEventListener("change", (e) => {
+      const input = e.target as HTMLInputElement;
+      if (!input.matches('input[name="color"]')) return;
+      cta.href = input.dataset.href ?? picker.dataset.defaultHref ?? cta.href;
+      if (label) label.textContent = input.value;
+    });
+  }
+</script>

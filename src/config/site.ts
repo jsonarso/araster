@@ -27,6 +27,8 @@ export const WHATSAPP_MESSAGES = {
   general: "¡Hola! Quiero hacer una consulta sobre Araster.",
   product: (productName: string) =>
     `¡Hola! Quiero consultar por: ${productName}`,
+  productWithColor: (productName: string, color: string) =>
+    `¡Hola! Quiero consultar por: ${productName} en color ${color}`,
 };
 
 export const CATEGORIES = [

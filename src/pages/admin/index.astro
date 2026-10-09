@@ -15,6 +15,12 @@ const products = await listProducts(getEnv());
       <h1 class="text-2xl font-semibold text-(--color-fg) sm:text-3xl">Administrar catálogo</h1>
       <div class="flex gap-2">
         <a
+          href="/admin/filamentos"
+          class="border border-(--color-border) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)"
+        >
+          Filamentos
+        </a>
+        <a
           href="/admin/colecciones"
           class="border border-(--color-border) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)"
         >

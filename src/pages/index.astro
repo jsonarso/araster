@@ -14,19 +14,19 @@ const featured = allProducts.filter((p) => p.featured).slice(0, 6);
 
 <Layout title={SITE.name} description={SITE.description}>
   <section class="relative overflow-hidden border-b border-(--color-border)">
-    <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+    <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16 lg:py-32">
       <div class="max-w-2xl">
         <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-(--color-accent)">
           PAT. Nº AR-03D — "SISTEMA DE FABRICACIÓN ADITIVA"
         </p>
-        <h1 class="mt-4 text-5xl font-semibold leading-[1.08] text-(--color-fg) sm:text-6xl">
+        <h1 class="mt-6 text-5xl font-semibold leading-[1.15] text-(--color-fg) sm:text-6xl">
           Un objeto, dibujado capa por capa hasta volverse <span class="thermal-text">real</span>.
         </h1>
-        <p class="mt-6 max-w-lg text-lg text-(--color-muted)">
+        <p class="mt-8 max-w-lg text-lg leading-relaxed text-(--color-muted)">
           Impresión 3D a medida. Piezas funcionales, decorativas y personalizadas — consultá por
           WhatsApp y te respondemos rápido.
         </p>
-        <div class="mt-8 flex flex-wrap gap-3">
+        <div class="mt-10 flex flex-wrap gap-4">
           <a
             href="/catalogo"
             class="inline-flex items-center gap-2 bg-(--color-fg) px-6 py-3.5 font-mono text-xs font-bold uppercase tracking-[0.08em] text-(--color-bg) hover:bg-(--color-accent) hover:text-(--color-bg)"
@@ -37,7 +37,7 @@ const featured = allProducts.filter((p) => p.featured).slice(0, 6);
         </div>
       </div>
 
-      <div class="diagram-panel absolute right-6 top-16 hidden w-72 lg:block">
+      <div class="diagram-panel hidden w-72 justify-self-end lg:block">
         <svg viewBox="0 0 300 300" class="w-full">
           <defs>
             <linearGradient id="thermal" x1="0" y1="0" x2="1" y2="1">
@@ -79,8 +79,8 @@ const featured = allProducts.filter((p) => p.featured).slice(0, 6);
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <div class="mb-8 flex items-end justify-between gap-4">
+  <section class="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
+    <div class="mb-10 flex items-end justify-between gap-4">
       <div>
         <h2 class="text-2xl font-semibold text-(--color-fg) sm:text-3xl">Piezas destacadas</h2>
         <p class="mt-2 text-(--color-muted)">Una muestra de lo que podemos imprimir para vos.</p>
@@ -89,7 +89,7 @@ const featured = allProducts.filter((p) => p.featured).slice(0, 6);
         Ver todo →
       </a>
     </div>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
       {featured.map((product, i) => <ProductCard product={product} index={i + 1} collections={collections} />)}
     </div>
     <a

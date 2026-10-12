@@ -21,7 +21,7 @@ export const REPRINT_MARGIN = 1.15;
 
 export const COMMON_MATERIALS = ["PLA", "PLA Mate", "PLA Silk", "PETG", "TPU", "ABS"];
 
-function normalizeMaterial(m: string): string {
+export function normalizeMaterial(m: string): string {
   // "mate" (Spanish spelling) and "matte" (Bambu Lab) are the same finish.
   return m.trim().toLowerCase().replace(/\s+/g, " ").replace(/\bmate\b/g, "matte");
 }
@@ -157,4 +157,15 @@ export async function undoUsage(env: Env, id: string): Promise<boolean> {
   }
   await env.PRODUCTS_KV.delete(LOG_PREFIX + id);
   return true;
+}
+
+/** Picks the spool to draw `grams` from: same material and color, preferring one that holds enough
+ * (the one with the least left over, so nearly-empty spools get used up first). Falls back to the fullest match. */
+export function findSpool(filaments: Filament[], material: string, colorName: string, grams: number): Filament | null {
+  const m = normalizeMaterial(material);
+  const c = colorName.trim().toLowerCase();
+  const matches = filaments.filter((f) => normalizeMaterial(f.material) === m && f.colorName.trim().toLowerCase() === c);
+  if (matches.length === 0) return null;
+  const enough = matches.filter((f) => f.remainingG >= grams).sort((a, b) => a.remainingG - b.remainingG);
+  return enough[0] ?? matches.sort((a, b) => b.remainingG - a.remainingG)[0];
 }

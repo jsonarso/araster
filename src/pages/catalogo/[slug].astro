@@ -127,9 +127,63 @@ const related = allProducts
           </div>
         )}
 
-        <div data-wa-cta>
-          <WhatsAppButton message={WHATSAPP_MESSAGES.product(name)} size="lg" class="mt-2 w-fit" />
-        </div>
+        <form
+          data-order-form
+          data-slug={product.slug}
+          data-price={price ?? ""}
+          data-needs-color={colors.length > 0 ? "1" : ""}
+          class="mt-2 flex flex-col gap-3 border-t border-(--color-border) pt-4"
+          novalidate
+        >
+          <div class="flex flex-wrap items-end gap-3">
+            <label class="block">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Cantidad</span>
+              <input
+                type="number"
+                name="quantity"
+                min="1"
+                max="50"
+                value="1"
+                inputmode="numeric"
+                class="mt-1 block w-24 border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) focus:border-(--color-accent) focus:outline-none"
+              />
+            </label>
+            <label class="block min-w-48 flex-1 max-w-xs">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-(--color-accent)">Tu nombre</span>
+              <input
+                type="text"
+                name="customerName"
+                maxlength="60"
+                autocomplete="name"
+                class="mt-1 block w-full border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) focus:border-(--color-accent) focus:outline-none"
+              />
+            </label>
+          </div>
+          <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" />
+          {price && (
+            <p class="text-sm text-(--color-muted)">
+              Total estimado: <span data-order-total class="font-mono text-lg text-(--color-accent)">{formatCrc(price)}</span>
+              <span class="block text-xs">El precio final se confirma por WhatsApp.</span>
+            </p>
+          )}
+          <p data-order-error role="alert" class="hidden text-sm text-red-500"></p>
+          <div class="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              data-order-submit
+              class="inline-flex items-center gap-2 bg-(--color-whatsapp) px-6 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.06em] text-[#052014] transition-colors hover:bg-(--color-whatsapp-strong) disabled:opacity-60"
+            >
+              Pedir por WhatsApp
+            </button>
+            <div data-wa-cta>
+              <WhatsAppButton
+                message={WHATSAPP_MESSAGES.product(name)}
+                variant="outline"
+                label="Solo tengo una consulta"
+              />
+            </div>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -184,6 +238,68 @@ const related = allProducts
     });
     document.addEventListener("click", (e) => {
       if (!picker.contains(e.target as Node)) setOpen(false);
+    });
+  }
+</script>
+
+<script>
+  const orderForm = document.querySelector<HTMLFormElement>("[data-order-form]");
+  if (orderForm) {
+    const qty = orderForm.querySelector<HTMLInputElement>("input[name=quantity]")!;
+    const nameInput = orderForm.querySelector<HTMLInputElement>("input[name=customerName]")!;
+    const honeypot = orderForm.querySelector<HTMLInputElement>("input[name=website]")!;
+    const totalEl = orderForm.querySelector<HTMLElement>("[data-order-total]");
+    const errorEl = orderForm.querySelector<HTMLElement>("[data-order-error]")!;
+    const submit = orderForm.querySelector<HTMLButtonElement>("[data-order-submit]")!;
+    const unitPrice = Number(orderForm.dataset.price) || 0;
+    const needsColor = !!orderForm.dataset.needsColor;
+    const money = new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 });
+
+    const selectedColor = () =>
+      document.querySelector<HTMLElement>('[data-color-list] [role="option"][aria-selected="true"]')?.dataset.name ?? "";
+    const showError = (msg: string) => {
+      errorEl.textContent = msg;
+      errorEl.classList.toggle("hidden", !msg);
+    };
+    const quantity = () => Math.floor(Number(qty.value));
+
+    qty.addEventListener("input", () => {
+      const q = quantity();
+      if (totalEl && unitPrice && q >= 1) totalEl.textContent = money.format(unitPrice * q);
+    });
+
+    orderForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      showError("");
+      const q = quantity();
+      if (!(q >= 1 && q <= 50)) return showError("Elegí una cantidad entre 1 y 50.");
+      if (needsColor && !selectedColor()) return showError("Elegí un color.");
+      if (!nameInput.value.trim()) return showError("Ingresá tu nombre.");
+
+      submit.disabled = true;
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productSlug: orderForm.dataset.slug,
+            quantity: q,
+            colorName: selectedColor(),
+            customerName: nameInput.value.trim(),
+            website: honeypot.value,
+          }),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string; whatsappUrl?: string };
+        if (!res.ok || !data.ok || !data.whatsappUrl) {
+          showError(data.error ?? "No se pudo registrar el pedido. Probá de nuevo o consultanos por WhatsApp.");
+          return;
+        }
+        window.location.href = data.whatsappUrl;
+      } catch {
+        showError("Error de red. Probá de nuevo o consultanos por WhatsApp.");
+      } finally {
+        submit.disabled = false;
+      }
     });
   }
 </script>

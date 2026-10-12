@@ -9,5 +9,18 @@
   ],
   "r2_buckets": [
     { "binding": "PRODUCT_PHOTOS", "bucket_name": "araster-product-photos" }
-  ]
+  ],
+  // Preview (non-production branch) deployments don't inherit bindings, and the
+  // Astro adapter otherwise injects a SESSION KV binding with no id, which
+  // Cloudflare rejects (code 10021). Declared explicitly. NOTE: these point at
+  // the production namespaces/bucket, so previews act on live data.
+  "previews": {
+    "kv_namespaces": [
+      { "binding": "SESSION", "id": "a5d3ebeae97349fc961efe1ec5cfa0bf" },
+      { "binding": "PRODUCTS_KV", "id": "b94634c5497f49278595f7ae4f526b23" }
+    ],
+    "r2_buckets": [
+      { "binding": "PRODUCT_PHOTOS", "bucket_name": "araster-product-photos" }
+    ]
+  }
 }

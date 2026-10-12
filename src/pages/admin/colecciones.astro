@@ -1,0 +1,69 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { listCollections, listProducts, getEnv } from "@/lib/products";
+
+export const prerender = false;
+
+const env = getEnv();
+const [collections, products] = await Promise.all([listCollections(env), listProducts(env)]);
+const counts = new Map<string, number>();
+for (const p of products) for (const t of p.tags) counts.set(t, (counts.get(t) ?? 0) + 1);
+
+const ok = Astro.url.searchParams.get("ok");
+const error = Astro.url.searchParams.get("error");
+
+const inputClass =
+  "border border-(--color-border) bg-(--color-bg) px-3 py-2 text-sm text-(--color-fg) focus:border-(--color-accent) focus:outline-none";
+const btnClass =
+  "border border-(--color-border) px-3 py-2 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)";
+---
+
+<Layout title="Colecciones · Admin" noIndex>
+  <section class="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+    <a href="/admin" class="font-mono text-xs text-(--color-muted) hover:text-(--color-accent)">← Volver</a>
+    <h1 class="mt-3 text-2xl font-semibold text-(--color-fg)">Colecciones</h1>
+    <p class="mt-2 text-sm text-(--color-muted)">
+      Un producto puede pertenecer a varias colecciones. Aparecen como filtros en el catálogo cuando tienen al menos un producto.
+    </p>
+
+    {ok && <p class="mt-6 border border-(--color-accent) px-3 py-2 text-sm text-(--color-fg)">{ok}</p>}
+    {error && <p class="mt-6 border border-red-500 px-3 py-2 text-sm text-red-500">{error}</p>}
+
+    <form method="POST" action="/api/admin/collections" class="mt-8 flex gap-2">
+      <input type="hidden" name="intent" value="create" />
+      <input name="label" required placeholder="Nueva colección (ej. Día del Padre)" class={`${inputClass} flex-1`} />
+      <button type="submit" class="bg-(--color-accent) px-4 py-2 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)">
+        Agregar
+      </button>
+    </form>
+
+    {collections.length === 0 ? (
+      <p class="mt-8 text-(--color-muted)">Todavía no hay colecciones.</p>
+    ) : (
+      <ul class="mt-8 flex flex-col divide-y divide-(--color-border) border-y border-(--color-border)">
+        {collections.map((c) => (
+          <li class="flex flex-wrap items-center gap-2 py-3">
+            <form method="POST" action="/api/admin/collections" class="flex min-w-0 flex-1 items-center gap-2">
+              <input type="hidden" name="intent" value="rename" />
+              <input type="hidden" name="slug" value={c.slug} />
+              <input name="label" value={c.label} required class={`${inputClass} min-w-0 flex-1`} />
+              <button type="submit" class={btnClass}>Guardar</button>
+            </form>
+            <span class="font-mono text-xs text-(--color-muted)">
+              {counts.get(c.slug) ?? 0} producto{(counts.get(c.slug) ?? 0) === 1 ? "" : "s"}
+            </span>
+            <form
+              method="POST"
+              action="/api/admin/collections"
+              onsubmit={`return confirm('¿Eliminar "${c.label.replace(/'/g, "")}"? Se quita de los productos que la usan.')`}
+            >
+              <input type="hidden" name="intent" value="delete" />
+              <input type="hidden" name="slug" value={c.slug} />
+              <button type="submit" class={`${btnClass} hover:border-red-500 hover:text-red-500`}>Eliminar</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>

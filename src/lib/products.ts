@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { env as workerEnv } from "cloudflare:workers";
-import { CATEGORIES } from "@/config/site";
+import { CATEGORIES, TAGS } from "@/config/site";
 
 export interface Env {
   PRODUCTS_KV: KVNamespace;
@@ -120,4 +120,61 @@ export function slugify(name: string): string {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+// ---- Collections (cross-cutting tags a product can belong to) ----
+
+export interface Collection {
+  slug: string;
+  label: string;
+}
+
+const COLLECTION_PREFIX = "collection:";
+const COLLECTIONS_SEEDED_KEY = "collections:seeded";
+
+/** Collections live in KV so the admin can manage them. On first use they are
+ * seeded once from the defaults in config/site.ts (TAGS). */
+export async function listCollections(env: Env): Promise<Collection[]> {
+  if (!(await env.PRODUCTS_KV.get(COLLECTIONS_SEEDED_KEY))) {
+    await Promise.all(
+      TAGS.map((t) =>
+        env.PRODUCTS_KV.put(COLLECTION_PREFIX + t.slug, JSON.stringify({ slug: t.slug, label: t.label }))
+      )
+    );
+    await env.PRODUCTS_KV.put(COLLECTIONS_SEEDED_KEY, "1");
+  }
+  const { keys } = await env.PRODUCTS_KV.list({ prefix: COLLECTION_PREFIX });
+  const collections = await Promise.all(
+    keys.map(async (k) => {
+      const raw = await env.PRODUCTS_KV.get(k.name);
+      return raw ? (JSON.parse(raw) as Collection) : null;
+    })
+  );
+  return collections
+    .filter((c): c is Collection => c !== null)
+    .sort((a, b) => a.label.localeCompare(b.label, "es"));
+}
+
+export async function saveCollection(env: Env, collection: Collection): Promise<void> {
+  await env.PRODUCTS_KV.put(COLLECTION_PREFIX + collection.slug, JSON.stringify(collection));
+}
+
+export async function collectionExists(env: Env, slug: string): Promise<boolean> {
+  return (await env.PRODUCTS_KV.get(COLLECTION_PREFIX + slug)) !== null;
+}
+
+/** Deletes the collection and removes its slug from every product's tags. */
+export async function deleteCollection(env: Env, slug: string): Promise<number> {
+  await env.PRODUCTS_KV.delete(COLLECTION_PREFIX + slug);
+  const products = await listProducts(env);
+  const affected = products.filter((p) => p.tags.includes(slug));
+  await Promise.all(
+    affected.map((p) =>
+      env.PRODUCTS_KV.put(
+        KEY_PREFIX + p.slug,
+        JSON.stringify({ ...p, tags: p.tags.filter((t) => t !== slug), updatedAt: new Date().toISOString() })
+      )
+    )
+  );
+  return affected.length;
 }

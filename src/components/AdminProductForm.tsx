@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/products";
-import { estimatePriceCrc, formatCrc, formatHours, roundCrc } from "@/lib/pricing";
+import { estimatePriceCrc, formatCrc, roundCrc } from "@/lib/pricing";
 
 interface CategoryOption {
   slug: string;
@@ -64,7 +64,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   const [description, setDescription] = useState(initialProduct?.description ?? "");
   const [material, setMaterial] = useState(initialProduct?.material ?? (mode === "create" ? "PLA Mate" : ""));
   const [size, setSize] = useState(initialProduct?.size ?? "");
-  const [printTime, setPrintTime] = useState(initialProduct?.printTime ?? "");
   const [printTimeHours, setPrintTimeHours] = useState(
     initialProduct?.printTimeHours != null ? String(initialProduct.printTimeHours) : ""
   );
@@ -198,7 +197,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
     formData.set("description", description);
     formData.set("material", material);
     formData.set("size", size);
-    formData.set("printTime", printTime || (hasEstimateInputs ? formatHours(hoursNum) : ""));
     if (hasEstimateInputs) formData.set("printTimeHours", String(hoursNum));
     if (!Number.isNaN(gramsNum) && gramsNum > 0) formData.set("filamentGrams", String(gramsNum));
     const priceNum = parseFloat(price);
@@ -338,15 +336,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
         <label className={labelClass}>
           <span className={labelTextClass}>Tamaño (opcional)</span>
           <input className={inputClass} value={size} onChange={(e) => setSize(e.target.value)} />
-        </label>
-        <label className={labelClass}>
-          <span className={labelTextClass}>Tiempo de impresión (texto, solo interno)</span>
-          <input
-            className={inputClass}
-            value={printTime}
-            onChange={(e) => setPrintTime(e.target.value)}
-            placeholder={hasEstimateInputs ? formatHours(hoursNum) : "3 h 20 min"}
-          />
         </label>
       </div>
 

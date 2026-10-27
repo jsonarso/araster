@@ -1,0 +1,172 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getEnv } from "@/lib/products";
+import { listFilaments, normalizeMaterial } from "@/lib/filaments";
+import { listOrders, buildPrintQueue, STATUS_LABELS, type OrderStatus } from "@/lib/orders";
+import { formatCrc } from "@/lib/pricing";
+
+export const prerender = false;
+
+const env = getEnv();
+const [orders, filaments] = await Promise.all([listOrders(env), listFilaments(env)]);
+const queue = buildPrintQueue(orders);
+
+// Is there enough filament for each queue row? (Orders already printing were deducted, so this is a rough guide.)
+function stockFor(row: (typeof queue)[number]) {
+  if (!row.grams || !row.material || !row.colorName) return null;
+  const available = filaments
+    .filter(
+      (f) =>
+        normalizeMaterial(f.material) === normalizeMaterial(row.material!) &&
+        f.colorName.trim().toLowerCase() === row.colorName!.trim().toLowerCase()
+    )
+    .reduce((sum, f) => sum + f.remainingG, 0);
+  return { available, enough: available >= row.grams };
+}
+
+const ok = Astro.url.searchParams.get("ok");
+const error = Astro.url.searchParams.get("error");
+const filter = (Astro.url.searchParams.get("estado") ?? "activos") as "activos" | OrderStatus | "todos";
+
+const ACTIVE: OrderStatus[] = ["pendiente", "confirmado", "imprimiendo", "listo"];
+const visible = orders.filter((o) =>
+  filter === "todos" ? true : filter === "activos" ? ACTIVE.includes(o.status) : o.status === filter
+);
+
+const counts = (s: OrderStatus) => orders.filter((o) => o.status === s).length;
+
+const nextActions: Record<OrderStatus, { status: OrderStatus; label: string; primary?: boolean }[]> = {
+  pendiente: [
+    { status: "confirmado", label: "Confirmar", primary: true },
+    { status: "cancelado", label: "Cancelar" },
+  ],
+  confirmado: [
+    { status: "imprimiendo", label: "Empezar a imprimir", primary: true },
+    { status: "cancelado", label: "Cancelar" },
+  ],
+  imprimiendo: [{ status: "listo", label: "Marcar listo", primary: true }],
+  listo: [{ status: "entregado", label: "Marcar entregado", primary: true }],
+  entregado: [],
+  cancelado: [],
+};
+
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleString("es-CR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Costa_Rica" });
+
+const btnClass =
+  "border border-(--color-border) px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-(--color-fg) hover:border-(--color-accent)";
+const primaryClass =
+  "bg-(--color-accent) px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-(--color-bg) hover:bg-(--color-accent-strong)";
+const tabs: { key: string; label: string }[] = [
+  { key: "activos", label: "Activos" },
+  { key: "pendiente", label: `Pendientes (${counts("pendiente")})` },
+  { key: "entregado", label: "Entregados" },
+  { key: "cancelado", label: "Cancelados" },
+  { key: "todos", label: "Todos" },
+];
+---
+
+<Layout title="Pedidos · Admin" noIndex>
+  <section class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+    <a href="/admin" class="font-mono text-xs text-(--color-muted) hover:text-(--color-accent)">← Volver</a>
+    <h1 class="mt-3 text-2xl font-semibold text-(--color-fg)">Pedidos</h1>
+    <p class="mt-2 text-sm text-(--color-muted)">
+      Los pedidos llegan como <strong>Pendientes</strong> cuando el cliente toca "Pedir por WhatsApp". Cuando lo acuerdan
+      por el chat, tocá <strong>Confirmar</strong> y pasa a la lista de impresión. Al empezar a imprimir se descuenta el filamento.
+    </p>
+
+    {ok && <p class="mt-6 border border-(--color-accent) px-3 py-2 text-sm text-(--color-fg)">{ok}</p>}
+    {error && <p class="mt-6 border border-red-500 px-3 py-2 text-sm text-red-500">{error}</p>}
+
+    <h2 class="mt-10 text-lg font-semibold text-(--color-fg)">Por imprimir</h2>
+    {queue.length === 0 ? (
+      <p class="mt-3 text-sm text-(--color-muted)">No hay nada confirmado por imprimir.</p>
+    ) : (
+      <ul class="mt-3 flex flex-col divide-y divide-(--color-border) border-y border-(--color-border)">
+        {queue.map((row) => {
+          const stock = stockFor(row);
+          return (
+            <li class="flex flex-wrap items-center gap-3 py-3">
+              <span class="font-mono text-lg text-(--color-accent)">{row.quantity}×</span>
+              {row.colorHex && (
+                <span class="h-5 w-5 shrink-0 rounded-full border border-(--color-border)" style={`background:${row.colorHex}`}></span>
+              )}
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-(--color-fg)">
+                  {row.productName}{row.colorName && ` · ${row.colorName}`}
+                </p>
+                <p class="text-xs text-(--color-muted)">{row.orderCodes.join(", ")}</p>
+              </div>
+              {row.grams != null && <span class="font-mono text-xs text-(--color-muted)">{Math.round(row.grams)} g</span>}
+              {stock && (
+                <span class={`font-mono text-xs ${stock.enough ? "text-(--color-accent)" : "text-red-500"}`}>
+                  {stock.enough ? `Alcanza (${stock.available} g)` : `Falta filamento (${stock.available} g)`}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    )}
+
+    <h2 class="mt-12 text-lg font-semibold text-(--color-fg)">Pedidos</h2>
+    <div class="mt-3 flex flex-wrap gap-2">
+      {tabs.map((t) => (
+        <a
+          href={`/admin/pedidos?estado=${t.key}`}
+          class={`border px-3 py-1 font-mono text-xs uppercase tracking-wider ${
+            filter === t.key
+              ? "border-(--color-accent) bg-(--color-accent) text-(--color-bg)"
+              : "border-(--color-border) text-(--color-fg) hover:border-(--color-accent)"
+          }`}
+        >
+          {t.label}
+        </a>
+      ))}
+    </div>
+
+    {visible.length === 0 ? (
+      <p class="mt-6 text-sm text-(--color-muted)">No hay pedidos en esta vista.</p>
+    ) : (
+      <ul class="mt-4 flex flex-col gap-3">
+        {visible.map((o) => (
+          <li class="border border-(--color-border) bg-(--color-surface) p-4">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="font-mono text-sm font-semibold text-(--color-fg)">
+                {o.code} <span class="ml-2 border border-(--color-border) px-2 py-0.5 text-[10px] uppercase tracking-wider text-(--color-accent)">{STATUS_LABELS[o.status]}</span>
+              </p>
+              <p class="text-xs text-(--color-muted)">{fmtDate(o.createdAt)}</p>
+            </div>
+            <p class="mt-1 text-sm text-(--color-fg)">{o.customerName}</p>
+            <ul class="mt-2 text-sm text-(--color-muted)">
+              {o.lines.map((l) => (
+                <li class="flex items-center gap-2">
+                  {l.colorHex && <span class="h-3 w-3 rounded-full border border-(--color-border)" style={`background:${l.colorHex}`}></span>}
+                  {l.quantity} × {l.productName}{l.colorName && ` · ${l.colorName}`}
+                </li>
+              ))}
+            </ul>
+            {o.total != null && <p class="mt-2 font-mono text-xs text-(--color-accent)">Total estimado {formatCrc(o.total)}</p>}
+            <div class="mt-3 flex flex-wrap gap-2">
+              {nextActions[o.status].map((a) => (
+                <form method="POST" action="/api/admin/orders">
+                  <input type="hidden" name="intent" value="status" />
+                  <input type="hidden" name="code" value={o.code} />
+                  <input type="hidden" name="status" value={a.status} />
+                  <button type="submit" class={a.primary ? primaryClass : btnClass}>{a.label}</button>
+                </form>
+              ))}
+              {(o.status === "pendiente" || o.status === "cancelado") && (
+                <form method="POST" action="/api/admin/orders" onsubmit="return confirm('¿Eliminar este pedido?')">
+                  <input type="hidden" name="intent" value="delete" />
+                  <input type="hidden" name="code" value={o.code} />
+                  <button type="submit" class={`${btnClass} hover:border-red-500 hover:text-red-500`}>Eliminar</button>
+                </form>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>

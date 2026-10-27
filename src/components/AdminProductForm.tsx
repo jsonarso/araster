@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/products";
-import { estimatePriceCrc, formatCrc, formatHours, roundCrc } from "@/lib/pricing";
+import { estimatePriceCrc, formatCrc, roundCrc } from "@/lib/pricing";
 
 interface CategoryOption {
   slug: string;
@@ -64,7 +64,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   const [description, setDescription] = useState(initialProduct?.description ?? "");
   const [material, setMaterial] = useState(initialProduct?.material ?? (mode === "create" ? "PLA Mate" : ""));
   const [size, setSize] = useState(initialProduct?.size ?? "");
-  const [printTime, setPrintTime] = useState(initialProduct?.printTime ?? "");
   const [printTimeHours, setPrintTimeHours] = useState(
     initialProduct?.printTimeHours != null ? String(initialProduct.printTimeHours) : ""
   );
@@ -115,7 +114,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
         name?: string | null;
         description?: string | null;
         image?: string | null;
-        printTimeHours?: number | null;
       };
       if (!res.ok || !data.ok) {
         setError(data.error ?? "No se pudo importar desde MakerWorld.");
@@ -126,7 +124,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
         setShortDescription(data.description.slice(0, 140));
         setDescription(data.description);
       }
-      if (data.printTimeHours) setPrintTimeHours(String(data.printTimeHours));
       if (data.image) setImportPreviewImage(data.image);
     } catch {
       setError("Error de red al importar. Probá de nuevo o cargá los datos a mano.");
@@ -200,7 +197,6 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
     formData.set("description", description);
     formData.set("material", material);
     formData.set("size", size);
-    formData.set("printTime", printTime || (hasEstimateInputs ? formatHours(hoursNum) : ""));
     if (hasEstimateInputs) formData.set("printTimeHours", String(hoursNum));
     if (!Number.isNaN(gramsNum) && gramsNum > 0) formData.set("filamentGrams", String(gramsNum));
     const priceNum = parseFloat(price);
@@ -341,25 +337,16 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
           <span className={labelTextClass}>Tamaño (opcional)</span>
           <input className={inputClass} value={size} onChange={(e) => setSize(e.target.value)} />
         </label>
-        <label className={labelClass}>
-          <span className={labelTextClass}>Tiempo de impresión (texto)</span>
-          <input
-            className={inputClass}
-            value={printTime}
-            onChange={(e) => setPrintTime(e.target.value)}
-            placeholder={hasEstimateInputs ? formatHours(hoursNum) : "3 h 20 min"}
-          />
-        </label>
       </div>
 
       <div className="border border-(--color-border) bg-(--color-surface) p-4">
         <span className={labelTextClass}>Cálculo de precio</span>
         <p className="mt-1 text-xs text-(--color-muted)">
-          Completá estos dos datos y el precio sugerido se calcula solo (editable abajo).
+          Cargalos desde tu slicer para UNA pieza (tiempo total y gramos). Con eso se calcula el precio sugerido (editable abajo), el descuento de filamento y los colores disponibles.
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className={labelClass}>
-            <span className={labelTextClass}>Horas de impresión</span>
+            <span className={labelTextClass}>Horas de impresión (1 pieza)</span>
             <input
               type="number"
               min="0"
@@ -370,7 +357,7 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
             />
           </label>
           <label className={labelClass}>
-            <span className={labelTextClass}>Gramos de filamento</span>
+            <span className={labelTextClass}>Gramos de filamento (1 pieza)</span>
             <input
               type="number"
               min="0"

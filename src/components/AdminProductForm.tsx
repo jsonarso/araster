@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/products";
 import { estimatePriceCrc, formatCrc, roundCrc } from "@/lib/pricing";
+import { packagingCostCrc, unitCostCrc, type PackagingItem } from "@/lib/packaging";
+import { PROFIT_MARGIN_PERCENT } from "@/config/pricing";
 
 interface CategoryOption {
   slug: string;
@@ -12,6 +14,7 @@ interface Props {
   mode: "create" | "edit";
   categories: readonly CategoryOption[];
   tags: readonly CategoryOption[];
+  packagingItems: readonly PackagingItem[];
   initialProduct?: Product;
 }
 
@@ -56,7 +59,7 @@ const inputClass =
 const labelClass = "flex flex-col gap-1.5";
 const labelTextClass = "font-mono text-xs uppercase tracking-widest text-(--color-muted)";
 
-export default function AdminProductForm({ mode, categories, tags, initialProduct }: Props) {
+export default function AdminProductForm({ mode, categories, tags, packagingItems, initialProduct }: Props) {
   const [name, setName] = useState(initialProduct?.name ?? "");
   const [category, setCategory] = useState(initialProduct?.category ?? categories[0]?.slug ?? "");
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set(initialProduct?.tags ?? []));
@@ -72,6 +75,12 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   );
   const [price, setPrice] = useState(initialProduct?.price != null ? String(initialProduct.price) : "");
   const [featured, setFeatured] = useState(initialProduct?.featured ?? false);
+  const [profitMargin, setProfitMargin] = useState(
+    String(initialProduct?.profitMarginPercent ?? PROFIT_MARGIN_PERCENT)
+  );
+  const [packagingUses, setPackagingUses] = useState<{ itemId: string; quantity: string }[]>(
+    (initialProduct?.packaging ?? []).map((u) => ({ itemId: u.itemId, quantity: String(u.quantity) }))
+  );
 
   const priceTouchedByUser = useRef(false);
   const [makerWorldUrl, setMakerWorldUrl] = useState("");
@@ -89,14 +98,29 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
   const hoursNum = parseFloat(printTimeHours);
   const gramsNum = parseFloat(filamentGrams);
   const hasEstimateInputs = !Number.isNaN(hoursNum) && hoursNum > 0 && !Number.isNaN(gramsNum) && gramsNum > 0;
+  const marginNum = parseFloat(profitMargin);
+  const validUses = packagingUses
+    .map((u) => ({ itemId: u.itemId, quantity: parseFloat(u.quantity) }))
+    .filter((u) => u.itemId && Number.isFinite(u.quantity) && u.quantity > 0);
+  const packagingTotal = packagingCostCrc(validUses, [...packagingItems]);
   const estimate = hasEstimateInputs
-    ? estimatePriceCrc({ printTimeHours: hoursNum, filamentGrams: gramsNum, material })
+    ? estimatePriceCrc({
+        printTimeHours: hoursNum,
+        filamentGrams: gramsNum,
+        material,
+        profitMarginPercent: Number.isFinite(marginNum) && marginNum >= 0 ? marginNum : undefined,
+        packagingCostCrc: packagingTotal,
+      })
     : null;
 
   useEffect(() => {
     if (!estimate || priceTouchedByUser.current) return;
     setPrice(String(roundCrc(estimate.priceCrc)));
   }, [estimate?.priceCrc]);
+
+  function updateUse(index: number, patch: Partial<{ itemId: string; quantity: string }>) {
+    setPackagingUses((prev) => prev.map((u, i) => (i === index ? { ...u, ...patch } : u)));
+  }
 
   async function handleImportFromMakerWorld() {
     if (!makerWorldUrl.trim()) return;
@@ -201,6 +225,8 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
     if (!Number.isNaN(gramsNum) && gramsNum > 0) formData.set("filamentGrams", String(gramsNum));
     const priceNum = parseFloat(price);
     if (!Number.isNaN(priceNum) && priceNum > 0) formData.set("price", String(priceNum));
+    if (Number.isFinite(marginNum) && marginNum >= 0) formData.set("profitMarginPercent", String(marginNum));
+    formData.set("packagingJson", JSON.stringify(validUses));
     formData.set("featured", featured ? "true" : "false");
     formData.set("altsJson", JSON.stringify(newPhotos.map((p) => p.alt || name)));
     newPhotos.forEach((p) => formData.append("photo", p.file, "photo.jpg"));
@@ -369,10 +395,96 @@ export default function AdminProductForm({ mode, categories, tags, initialProduc
           </label>
         </div>
 
+        <label className={cn(labelClass, "mt-3 sm:w-1/2")}>
+          <span className={labelTextClass}>Porcentaje de utilidad (%)</span>
+          <input
+            type="number"
+            min="0"
+            max="1000"
+            step="1"
+            className={inputClass}
+            value={profitMargin}
+            onChange={(e) => setProfitMargin(e.target.value)}
+          />
+          <span className="text-xs text-(--color-muted)">
+            Se aplica sobre todos los costos (máquina, filamento, electricidad y empaque). Por defecto {PROFIT_MARGIN_PERCENT}%.
+          </span>
+        </label>
+
+        <div className="mt-4 border-t border-(--color-border) pt-3">
+          <span className={labelTextClass}>Materiales de empaque (por pieza)</span>
+          <p className="mt-1 text-xs text-(--color-muted)">
+            Lo que va con cada pieza al entregarla: bolsa, mecate, etc.{" "}
+            <a href="/admin/empaques" className="text-(--color-accent) underline">
+              Administrar materiales
+            </a>
+          </p>
+          {packagingUses.map((use, i) => {
+            const item = packagingItems.find((p) => p.id === use.itemId);
+            const qty = parseFloat(use.quantity);
+            const rowCost = item && Number.isFinite(qty) && qty > 0 ? unitCostCrc(item) * qty : 0;
+            return (
+              <div key={i} className="mt-2 flex flex-wrap items-center gap-2">
+                <select
+                  className={cn(inputClass, "min-w-0 flex-1")}
+                  value={use.itemId}
+                  onChange={(e) => updateUse(i, { itemId: e.target.value })}
+                >
+                  <option value="">Elegí un material…</option>
+                  {packagingItems.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                  {use.itemId && !item && <option value={use.itemId}>(material eliminado)</option>}
+                </select>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  className={cn(inputClass, "w-24")}
+                  value={use.quantity}
+                  onChange={(e) => updateUse(i, { quantity: e.target.value })}
+                  aria-label="Cantidad usada"
+                />
+                <span className="w-16 text-xs text-(--color-muted)">{item?.unit ?? ""}</span>
+                <span className="w-24 text-right font-mono text-xs text-(--color-accent)">
+                  {rowCost > 0 ? formatCrc(rowCost) : ""}
+                </span>
+                <button
+                  type="button"
+                  className="font-mono text-xs text-red-400 hover:underline"
+                  onClick={() => setPackagingUses((prev) => prev.filter((_, idx) => idx !== i))}
+                >
+                  Quitar
+                </button>
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            disabled={packagingItems.length === 0}
+            className="mt-2 font-mono text-xs text-(--color-accent) hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setPackagingUses((prev) => [...prev, { itemId: "", quantity: "1" }])}
+          >
+            + Agregar material
+          </button>
+          {packagingItems.length === 0 && (
+            <p className="mt-1 text-xs text-(--color-muted)">Primero cargá materiales en "Administrar materiales".</p>
+          )}
+          {packagingTotal > 0 && (
+            <p className="mt-2 text-xs text-(--color-muted)">
+              Empaque por pieza: <span className="text-(--color-accent)">{formatCrc(packagingTotal)}</span>
+            </p>
+          )}
+        </div>
+
         {estimate && (
           <p className="mt-3 text-xs text-(--color-muted)">
             Sugerido: máquina {formatCrc(estimate.machineCostCrc)} + material {formatCrc(estimate.materialCostCrc)} +
-            electricidad {formatCrc(estimate.electricityCostCrc)}, con margen ={" "}
+            electricidad {formatCrc(estimate.electricityCostCrc)}
+            {estimate.packagingCostCrc > 0 && <> + empaque {formatCrc(estimate.packagingCostCrc)}</>}, con{" "}
+            {Number.isFinite(marginNum) ? marginNum : PROFIT_MARGIN_PERCENT}% de utilidad ={" "}
             <span className="text-(--color-accent)">{formatCrc(roundCrc(estimate.priceCrc))}</span>
           </p>
         )}

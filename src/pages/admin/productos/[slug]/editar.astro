@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import AdminProductForm from "@/components/AdminProductForm.tsx";
 import { CATEGORIES } from "@/config/site";
+import { listPackaging } from "@/lib/packaging";
 import { getProduct, listCollections, getEnv } from "@/lib/products";
 
 export const prerender = false;
@@ -10,6 +11,7 @@ const { slug } = Astro.params;
 const env = getEnv();
 const product = slug ? await getProduct(env, slug) : null;
 const collections = await listCollections(env);
+const packagingItems = await listPackaging(env);
 
 if (!product) {
   return new Response("Producto no encontrado.", { status: 404 });
@@ -33,7 +35,7 @@ if (!product) {
     </div>
 
     <div class="mt-8">
-      <AdminProductForm mode="edit" categories={CATEGORIES} tags={collections} initialProduct={product} client:load />
+      <AdminProductForm mode="edit" categories={CATEGORIES} tags={collections} packagingItems={packagingItems} initialProduct={product} client:load />
     </div>
   </section>
 </Layout>

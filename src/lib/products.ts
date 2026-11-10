@@ -37,6 +37,10 @@ export const productSchema = z.object({
   printTimeHours: z.number().positive().optional(),
   filamentGrams: z.number().positive().optional(),
   price: z.number().positive().optional(),
+  /** Profit % used for this product's suggested price. Missing = the default in config/pricing.ts. */
+  profitMarginPercent: z.number().min(0).max(1000).optional(),
+  /** Packaging/delivery materials used per piece (items from the packaging catalog). */
+  packaging: z.array(z.object({ itemId: z.string(), quantity: z.number().positive() })).default([]),
   featured: z.boolean().default(false),
   photos: z.array(photoSchema).min(1, "Subí al menos una foto."),
   createdAt: z.string(),
@@ -177,4 +181,22 @@ export async function deleteCollection(env: Env, slug: string): Promise<number> 
     )
   );
   return affected.length;
+}
+
+/** Reads the optional profit % from a form field. 0 is a valid value; blank or invalid means "use the default". */
+export function parseProfitMargin(value: FormDataEntryValue | null): number | undefined {
+  if (value == null || String(value).trim() === "") return undefined;
+  const n = parseFloat(String(value));
+  return Number.isFinite(n) && n >= 0 && n <= 1000 ? n : undefined;
+}
+
+/** Reads the packaging list ([{itemId, quantity}]) a product form submits as JSON, dropping malformed rows. */
+export function parsePackagingJson(value: FormDataEntryValue | null): Product["packaging"] {
+  try {
+    const raw = JSON.parse(String(value ?? "[]")) as unknown;
+    const parsed = productSchema.shape.packaging.safeParse(raw);
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
 }

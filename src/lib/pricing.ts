@@ -14,12 +14,17 @@ export interface PriceEstimateInput {
   printTimeHours: number;
   filamentGrams: number;
   material?: string;
+  /** Profit on top of the full cost. Defaults to PROFIT_MARGIN_PERCENT (30). */
+  profitMarginPercent?: number;
+  /** Cost of the packaging/delivery materials used for one piece (bag, string...). */
+  packagingCostCrc?: number;
 }
 
 export interface PriceEstimate {
   machineCostCrc: number;
   materialCostCrc: number;
   electricityCostCrc: number;
+  packagingCostCrc: number;
   subtotalCrc: number;
   priceCrc: number;
 }
@@ -32,7 +37,13 @@ function filamentPriceUsdPerKg(material?: string): number {
 
 /** Cost-based price estimate in CRC. See src/config/pricing.ts for the underlying
  * assumptions — every number here is adjustable there. */
-export function estimatePriceCrc({ printTimeHours, filamentGrams, material }: PriceEstimateInput): PriceEstimate {
+export function estimatePriceCrc({
+  printTimeHours,
+  filamentGrams,
+  material,
+  profitMarginPercent = PROFIT_MARGIN_PERCENT,
+  packagingCostCrc = 0,
+}: PriceEstimateInput): PriceEstimate {
   const machineCostCrc =
     ((PRINTER_PRICE_USD * EXCHANGE_RATE_CRC_PER_USD) / PRINTER_LIFETIME_HOURS) * printTimeHours;
 
@@ -42,10 +53,11 @@ export function estimatePriceCrc({ printTimeHours, filamentGrams, material }: Pr
 
   const electricityCostCrc = (PRINTER_AVERAGE_WATTS / 1000) * printTimeHours * ELECTRICITY_CRC_PER_KWH;
 
-  const subtotalCrc = machineCostCrc + materialCostCrc + electricityCostCrc;
-  const priceCrc = subtotalCrc * (1 + PROFIT_MARGIN_PERCENT / 100);
+  // Packaging is a real cost of delivering the piece, so the margin applies to it too.
+  const subtotalCrc = machineCostCrc + materialCostCrc + electricityCostCrc + packagingCostCrc;
+  const priceCrc = subtotalCrc * (1 + profitMarginPercent / 100);
 
-  return { machineCostCrc, materialCostCrc, electricityCostCrc, subtotalCrc, priceCrc };
+  return { machineCostCrc, materialCostCrc, electricityCostCrc, packagingCostCrc, subtotalCrc, priceCrc };
 }
 
 /** Rounds to the nearest 100 CRC — avoids showing a price like ₡4,217. */

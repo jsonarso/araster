@@ -6,6 +6,8 @@ import {
   deleteProduct,
   deleteProductPhoto,
   uploadProductPhoto,
+  parsePackagingJson,
+  parseProfitMargin,
   type ProductInput,
 } from "@/lib/products";
 
@@ -44,6 +46,8 @@ export const PUT: APIRoute = async ({ params, request }) => {
   const printTimeHours = parseOptionalNumber(form.get("printTimeHours"));
   const filamentGrams = parseOptionalNumber(form.get("filamentGrams"));
   const price = parseOptionalNumber(form.get("price"));
+  const profitMarginPercent = parseProfitMargin(form.get("profitMarginPercent"));
+  const packaging = parsePackagingJson(form.get("packagingJson"));
   const featured = form.get("featured") === "true";
 
   let tags: string[] = [];
@@ -89,6 +93,8 @@ export const PUT: APIRoute = async ({ params, request }) => {
     printTimeHours,
     filamentGrams,
     price,
+    profitMarginPercent,
+    packaging,
     featured,
     photos,
   };
